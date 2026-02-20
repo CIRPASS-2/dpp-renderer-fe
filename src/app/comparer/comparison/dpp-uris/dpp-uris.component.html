@@ -1,0 +1,49 @@
+@if (!showScanner){
+<div class="url-input-list-container">
+    <div class="header">
+        <h3 class="title">
+            <i class="pi pi-link"></i>
+            URL List
+        </h3>
+        <span class="url-count" [class.has-urls]="hasValidUrls()">
+            {{ getValidUrlCount() }} URL{{ getValidUrlCount() !== 1 ? 's' : '' }}
+        </span>
+    </div>
+
+    <div class="url-inputs-list">
+        @for (input of urlInputs; track trackByFn($index, input)) {
+        <div class="url-input-row">
+            <span class="p-input-icon-left input-wrapper">
+                <i class="pi pi-globe"></i>
+                <input type="text" pInputText [(ngModel)]="input.value" placeholder="https://example.com/dpp-instance"
+                    class="w-full" [pTooltip]="input.value || 'Enter a URL'" tooltipPosition="top" />
+            </span>
+
+            @if (urlInputs.length > 1) {
+            <p-button icon="pi pi-times" [text]="true" [rounded]="true" severity="danger"
+                (onClick)="removeUrlInput(input.id)" pTooltip="Remove URL" tooltipPosition="top" />
+            }
+        </div>
+        }
+    </div>
+
+    <div class="actions">
+        <p-button label="Add URL" icon="pi pi-plus" [outlined]="true" (onClick)="addUrlInput()" severity="secondary" />
+
+        <p-button label="Scan code" icon="pi pi-qrcode" [outlined]="true" (onClick)="openScanner()"
+            severity="secondary" />
+
+        <p-button label="Submit URLs" icon="pi pi-check" (onClick)="onSubmit()" [disabled]="!hasValidUrls()"
+            severity="success" />
+    </div>
+
+    @if (!hasValidUrls()) {
+    <div class="info-message">
+        <i class="pi pi-info-circle"></i>
+        <span>Add at least two URL to submit</span>
+    </div>
+    }
+</div>
+} @else {
+<app-scanner (scanCompleted)="onScanCompleted($event)" (done)="onDoneScanner()"></app-scanner>
+}

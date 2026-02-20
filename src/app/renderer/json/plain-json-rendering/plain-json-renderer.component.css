@@ -1,0 +1,69 @@
+.pjr-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.pjr-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.pjr-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-color-secondary);
+}
+
+.pjr-value {
+  font-size: 0.9rem;
+  color: var(--text-color);
+  word-break: break-word;
+}
+
+.pjr-empty {
+  color: var(--text-color-secondary);
+  font-style: italic;
+}
+
+.pjr-pill-list,
+.pjr-mixed-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: flex-start;
+}
+
+.pjr-pill {
+  display: inline-block;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  background: var(--surface-ground);
+  border: 1px solid var(--surface-border);
+  font-size: 0.8rem;
+  color: var(--text-color);
+  word-break: break-all;
+}
+
+.pjr-object-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+:host ::ng-deep .pjr-fieldset {
+  .p-fieldset-legend {
+    font-size: 0.78rem;
+    padding: 0.35rem 0.65rem;
+  }
+  .p-fieldset-content {
+    padding: 0.65rem 0.75rem;
+  }
+}
+
+:host ::ng-deep .pjr-divider {
+  margin: 0.2rem 0;
+}

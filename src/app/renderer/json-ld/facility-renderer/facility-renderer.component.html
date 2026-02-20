@@ -1,0 +1,41 @@
+@if (isIriOnly) {
+      <div class="facility-iri-badge" [title]="node['@id']">
+        <span>🏭</span>
+        <span class="facility-label">External Facility</span>
+        <a [href]="node['@id']" target="_blank" rel="noopener" class="facility-iri-link">
+          {{ shortIri }}
+        </a>
+      </div>
+    } @else {
+      <p-card styleClass="facility-card">
+        <ng-template pTemplate="title">
+          <div class="facility-title-row">
+            <span>🏭</span>
+            <span>{{ displayId ?? 'Facility' }}</span>
+          </div>
+        </ng-template>
+        <ng-template pTemplate="content">
+          <div class="facility-fields">
+            @if (displayId) {
+              <div class="field-item">
+                <span class="field-label">Facility ID</span>
+                <code class="field-value">{{ displayId }}</code>
+              </div>
+            }
+            @if (actors.length > 0) {
+              <div class="field-item">
+                <span class="field-label">Used By</span>
+                @for (a of actors; track a) {
+                  <span class="field-value">{{ a }}</span>
+                }
+              </div>
+            }
+          </div>
+          @if (node['@id']) {
+            <a [href]="node['@id']" target="_blank" rel="noopener" class="facility-iri-footer">
+              {{ node['@id'] }}
+            </a>
+          }
+        </ng-template>
+      </p-card>
+    }

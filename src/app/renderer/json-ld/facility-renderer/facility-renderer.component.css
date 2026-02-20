@@ -1,0 +1,10 @@
+.facility-iri-badge  { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0.75rem; background: #f8f9fa; border: 1px dashed #adb5bd; border-radius: 20px; font-size: 0.85rem; }
+.facility-label      { font-weight: 600; color: #495057; }
+.facility-iri-link   { color: #6366f1; max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.facility-card       { border-left: 4px solid #f59e0b; }
+.facility-title-row  { display: flex; align-items: center; gap: 0.6rem; }
+.facility-fields     { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 0.5rem; }
+.field-item          { display: flex; flex-direction: column; gap: 0.15rem; }
+.field-label         { font-size: 0.72rem; font-weight: 600; color: #6c757d; text-transform: uppercase; letter-spacing: 0.05em; }
+.field-value         { font-size: 0.9rem; }
+.facility-iri-footer { font-size: 0.75rem; color: #6366f1; word-break: break-all; }

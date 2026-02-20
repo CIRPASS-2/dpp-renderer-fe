@@ -1,0 +1,16 @@
+.qp-card   { border-radius: 8px; padding: 0.75rem 1rem; border: 1px solid #dee2e6; display: flex; flex-direction: column; gap: 0.25rem; }
+.qp-header { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; opacity: 0.65; }
+.qp-body   { display: flex; align-items: baseline; gap: 0.4rem; flex-wrap: wrap; }
+.qp-value  { font-size: 1.4rem; font-weight: 600; }
+.qp-unit   { font-size: 0.85rem; color: #6c757d; }
+.qp-tolerance { font-size: 0.8rem; color: #6c757d; }
+.qp-empty  { color: #adb5bd; font-size: 1rem; }
+.qp-footer a { font-size: 0.75rem; color: #6366f1; word-break: break-all; }
+
+.cat-dimension    { background: #f0f7ff; border-color: #bde3ff; }
+.cat-environment  { background: #f0fdf4; border-color: #86efac; }
+.cat-resource     { background: #fffbeb; border-color: #fde68a; }
+.cat-waste        { background: #fef2f2; border-color: #fca5a5; }
+.cat-circular     { background: #f5f3ff; border-color: #c4b5fd; }
+.cat-quality      { background: #fff7ed; border-color: #fed7aa; }
+.cat-default      { background: #f8f9fa; border-color: #dee2e6; }

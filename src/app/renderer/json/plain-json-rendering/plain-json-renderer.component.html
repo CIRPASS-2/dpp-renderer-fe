@@ -1,0 +1,65 @@
+<div class="pjr-container">
+  @for (entry of entries; track entry.key) {
+
+  <div class="pjr-field">
+    <span class="pjr-label">{{ entry.key | label }}</span>
+
+    @switch (entry.kind) {
+
+    @case ('primitive') {
+    <span class="pjr-value">{{ entry.primitiveValue }}</span>
+    }
+
+    @case ('array-of-primitives') {
+    @if (entry.primitiveItems!.length === 0) {
+    <span class="pjr-value pjr-empty">[ ]</span>
+    } @else {
+    <div class="pjr-pill-list">
+      @for (item of entry.primitiveItems!; track trackByIndex($index)) {
+      <span class="pjr-pill">{{ item }}</span>
+      }
+    </div>
+    }
+    }
+
+    @case ('object') {
+    <p-fieldset [legend]="entry.key | label" [toggleable]="true" [collapsed]="true" styleClass="pjr-fieldset">
+      <app-plain-json-renderer [data]="entry.objectValue!" [depth]="depth + 1" [collapsed]="true" />
+    </p-fieldset>
+    }
+
+    @case ('array-of-objects') {
+    <div class="pjr-object-list">
+      @for (item of entry.objectItems!; track trackByIndex($index)) {
+      <p-fieldset [legend]="(entry.key | label) + ' ' + ($index + 1)" [toggleable]="true" [collapsed]="true"
+        styleClass="pjr-fieldset">
+        <app-plain-json-renderer [data]="item" [depth]="depth + 1" [collapsed]="true" />
+      </p-fieldset>
+      }
+    </div>
+    }
+
+    @case ('mixed-array') {
+    <div class="pjr-mixed-list">
+      @for (item of entry.mixedItems!; track trackByIndex($index)) {
+      @if (isMixedPrimitive(item)) {
+      <span class="pjr-pill">{{ formatMixed(item) }}</span>
+      } @else {
+      <p-fieldset [legend]="(entry.key | label) + ' ' + ($index + 1)" [toggleable]="true" [collapsed]="true"
+        styleClass="pjr-fieldset">
+        <app-plain-json-renderer [data]="asObject(item)" [depth]="depth + 1" [collapsed]="true" />
+      </p-fieldset>
+      }
+      }
+    </div>
+    }
+
+    }
+  </div>
+
+  @if (!$last) {
+  <p-divider styleClass="pjr-divider" />
+  }
+
+  }
+</div>

@@ -1,0 +1,7 @@
+.doc-card        { padding: 0.75rem 1rem; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; border-left: 4px solid #64748b; display: flex; flex-direction: column; gap: 0.4rem; }
+.doc-header      { display: flex; align-items: center; gap: 0.5rem; }
+.doc-icon        { font-size: 1.1rem; }
+.doc-type        { font-size: 0.75rem; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; }
+.doc-description { font-size: 0.9rem; color: #334155; margin: 0; }
+.doc-link        { font-size: 0.85rem; color: #6366f1; word-break: break-all; }
+.doc-value       { font-size: 0.9rem; color: #334155; white-space: pre-wrap; }

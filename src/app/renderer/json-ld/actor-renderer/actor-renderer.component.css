@@ -1,0 +1,28 @@
+.actor-iri-badge  { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0.75rem; background: #f8f9fa; border: 1px dashed #adb5bd; border-radius: 20px; font-size: 0.85rem; }
+    .actor-iri-icon   { font-size: 1rem; }
+    .actor-iri-label  { font-weight: 600; color: #495057; }
+    .actor-iri-link   { color: #6366f1; word-break: break-all; max-width: 320px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    /* Card */
+    .legal-card   { border-left: 4px solid #0ea5e9; }
+    .natural-card { border-left: 4px solid #10b981; }
+    .actor-card   { border-left: 4px solid #8b5cf6; }
+    .actor-title-row { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
+    .actor-icon   { font-size: 1.2rem; }
+    .actor-id     { font-size: 0.75rem; background: #f0f0f0; padding: 0.1rem 0.4rem; border-radius: 4px; color: #6c757d; }
+
+    .actor-roles  { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.75rem; }
+    ::ng-deep .role-tag .p-tag { font-size: 0.72rem; }
+
+    .actor-fields { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.6rem; }
+    .field-item   { display: flex; flex-direction: column; gap: 0.15rem; }
+    .field-label  { font-size: 0.72rem; font-weight: 600; color: #6c757d; text-transform: uppercase; letter-spacing: 0.05em; }
+    .field-value  { font-size: 0.9rem; color: #212529; }
+    .field-multi  { display: flex; flex-direction: column; gap: 0.1rem; }
+
+    .actor-section-label { font-size: 0.72rem; font-weight: 700; color: #6c757d; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.4rem; }
+    .facilities-list { display: flex; flex-direction: column; gap: 0.4rem; }
+    .facility-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; }
+    .facility-icon { font-size: 1rem; }
+
+    .actor-iri-footer { font-size: 0.75rem; color: #6366f1; word-break: break-all; }

@@ -1,0 +1,23 @@
+<div class="qp-card" [class]="categoryClass">
+    <div class="qp-header">
+        <span class="qp-type">{{ typeName }}</span>
+    </div>
+    <div class="qp-body">
+        @if (numValue !== undefined) {
+        <span class="qp-value">{{ numValue }}</span>
+        @if (unit) { <span class="qp-unit">{{ unit }}</span> }
+        @if (tolerance !== undefined) {
+        <span class="qp-tolerance">± {{ tolerance }}</span>
+        }
+        } @else if (strValue) {
+        <span class="qp-value">{{ strValue }}</span>
+        } @else {
+        <span class="qp-value qp-empty">—</span>
+        }
+    </div>
+    @if (dictRef) {
+    <div class="qp-footer">
+        <a [href]="dictRef" target="_blank" rel="noopener" class="qp-ref">{{ dictRef }}</a>
+    </div>
+    }
+</div>

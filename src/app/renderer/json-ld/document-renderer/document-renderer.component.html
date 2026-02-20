@@ -1,0 +1,20 @@
+<div class="doc-card">
+      <div class="doc-header">
+        <span class="doc-icon">{{ icon }}</span>
+        <span class="doc-type">{{ typeName }}</span>
+        @if (contentType) {
+          <p-tag [value]="contentType" severity="secondary" />
+        }
+      </div>
+      @if (description) {
+        <p class="doc-description">{{ description }}</p>
+      }
+      @if (webLink) {
+        <a [href]="webLink" target="_blank" rel="noopener" class="doc-link">
+          {{ webLink }}
+        </a>
+      }
+      @if (value) {
+        <div class="doc-value">{{ value }}</div>
+      }
+    </div>

@@ -1,0 +1,38 @@
+<p-card styleClass="product-card">
+    <ng-template pTemplate="header">
+        <div class="product-header">
+            @if (imageUrl) {
+            <img [src]="imageUrl" [alt]="name ?? 'Product image'" class="product-image" />
+            }
+            <div class="product-title-block">
+                <h2 class="product-name">{{ name ?? 'Product' }}</h2>
+                @if (productId) {
+                <span class="product-id">ID: {{ productId }}</span>
+                }
+                @if (gtin) {
+                <span class="product-id">GTIN: {{ gtin }}</span>
+                }
+            </div>
+        </div>
+    </ng-template>
+
+    @if (description) {
+    <p class="product-description">{{ description }}</p>
+    <p-divider />
+    }
+
+    <div class="field-grid">
+        @for (field of scalarFields; track field.uri) {
+        <div class="field-item">
+            <span class="field-label">{{ field.uri | label }}</span>
+            <span class="field-value">{{ field.value }}</span>
+        </div>
+        }
+    </div>
+
+    <!-- Unknown / extra properties use abstract renderer -->
+    @if (extraUris.length > 0) {
+    <p-divider />
+    <app-abstract-renderer [node]="node" [graph]="graph" [skipUris]="knownUris" />
+    }
+</p-card>

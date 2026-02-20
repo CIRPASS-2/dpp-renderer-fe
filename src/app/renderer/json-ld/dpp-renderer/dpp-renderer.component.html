@@ -1,0 +1,42 @@
+<div class="dpp-root">
+      @if (error) {
+        <p-message severity="error" [text]="error" />
+      } @else if (resolvedNodes.length === 0) {
+        <p-progressSpinner />
+      } @else {
+        @for (rn of resolvedNodes; track rn.node['@id'] ?? $index) {
+          @switch (rn.category) {
+            @case ('product') {
+              <app-product-renderer [node]="rn.node" [graph]="graph" />
+            }
+            @case ('dpp') {
+              <app-dpp-info-renderer [node]="rn.node" [graph]="graph" />
+            }
+            @case ('quantitative-property') {
+              <app-quantitative-property-renderer [node]="rn.node" />
+            }
+            @case ('classification-code') {
+              <app-classification-code-renderer [node]="rn.node" />
+            }
+            @case ('actor') {
+              <app-actor-renderer [node]="rn.node" [graph]="graph" />
+            }
+            @case ('facility') {
+              <app-facility-renderer [node]="rn.node" [graph]="graph" />
+            }
+            @case ('substance') {
+              <app-substance-renderer [node]="rn.node" [graph]="graph" />
+            }
+            @case ('document') {
+              <app-document-renderer [node]="rn.node" />
+            }
+            @case ('lca') {
+              <app-lca-renderer [node]="rn.node" [graph]="graph" />
+            }
+            @default {
+              <app-abstract-renderer [node]="rn.node" [graph]="graph" />
+            }
+          }
+        }
+      }
+    </div>

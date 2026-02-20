@@ -1,0 +1,134 @@
+<div class="ontology-selector-container">
+    <!-- Input per caricare ontologia da URL -->
+    <div class="ontology-url-loader">
+        <label for="ontologyUrl">Load Ontology from URL:</label>
+        <div class="p-inputgroup">
+            <input id="ontologyUrl" type="text" pInputText [(ngModel)]="ontologyUrl"
+                placeholder="https://example.org/ontology.jsonld" class="w-full">
+            <p-button label="Load" icon="pi pi-download" (onClick)="onLoadOntologyFromUrl()" [loading]="loadingOntology"
+                [disabled]="!ontologyUrl || ontologyUrl.trim() === ''">
+            </p-button>
+        </div>
+    </div>
+
+    <!-- Header con ricerca e azioni -->
+    <div class="selector-header">
+        <div class="header-title">
+            <i class="pi pi-sitemap"></i>
+            <h3>Select Properties</h3>
+        </div>
+
+        <!-- Statistiche -->
+        @if (showStats()) {
+        <div class="header-stats">
+            <p-chip [label]="selectedCount + ' / ' + totalProperties + ' selected'"
+                [styleClass]="hasSelection() ? 'selection-chip' : 'empty-chip'">
+            </p-chip>
+        </div>
+        }
+
+        <!-- Azioni -->
+        <div class="header-actions">
+            <p-button icon="pi pi-plus" [text]="true" [rounded]="true" pTooltip="Select All" tooltipPosition="bottom"
+                (onClick)="selectAll()" severity="secondary">
+            </p-button>
+
+            <p-button icon="pi pi-times" [text]="true" [rounded]="true" pTooltip="Clear Selection"
+                tooltipPosition="bottom" (onClick)="clearSelection()" [disabled]="!hasSelection()" severity="secondary">
+            </p-button>
+
+            <p-button icon="pi pi-angle-double-down" [text]="true" [rounded]="true" pTooltip="Expand All"
+                tooltipPosition="bottom" (onClick)="expandAll()" severity="secondary">
+            </p-button>
+
+            <p-button icon="pi pi-angle-double-up" [text]="true" [rounded]="true" pTooltip="Collapse All"
+                tooltipPosition="bottom" (onClick)="collapseAll()" severity="secondary">
+            </p-button>
+        </div>
+    </div>
+
+    <!-- Barra di ricerca -->
+    @if (showSearch()) {
+    <div class="search-bar">
+        <span class="p-input-icon-left w-full">
+            <i class="pi pi-search"></i>
+            <input type="text" pInputText [(ngModel)]="searchText" (input)="onSearch()"
+                placeholder="Search properties..." class="w-full">
+        </span>
+    </div>
+    }
+
+    <div class="tree-container">
+        <p-tree [value]="filteredNodes" [(selection)]="selectedNodes" [selectionMode]="selectionMode()"
+            [loading]="loading" [propagateSelectionUp]="false" [propagateSelectionDown]="false"
+            (onNodeSelect)="onNodeSelect($event)" (onNodeUnselect)="onNodeUnselect($event)" [filter]="false"
+            filterMode="lenient" styleClass="w-full">
+
+            <ng-template let-node pTemplate="default">
+                <div class="tree-node-content">
+                    <i [class]="node.icon" [class.leaf-icon]="node.leaf"></i>
+
+                    <span class="node-label" [class.leaf-label]="node.leaf">
+                        {{ node.label }}
+                    </span>
+
+                    @if (node.leaf && node.data?.dataType) {
+                    <p-tag [value]="node.data.dataType" [severity]="getDataTypeSeverity(node.data.dataType)"
+                        [rounded]="true" styleClass="ml-2 data-type-badge">
+                    </p-tag>
+                    }
+
+                    @if (node.data?.comment) {
+                    <i class="pi pi-info-circle info-icon ml-2" [pTooltip]="node.data.comment" tooltipPosition="right"
+                        [escape]="false">
+                    </i>
+                    }
+
+                    @if (node.leaf && node.data?.path) {
+                    <span class="node-path">
+                        {{ node.data.path }}
+                    </span>
+                    }
+                </div>
+            </ng-template>
+
+            <!-- Empty message -->
+            <ng-template pTemplate="empty">
+                <div class="empty-tree">
+                    <i class="pi pi-inbox"></i>
+                    <p>No properties found</p>
+                    @if (searchText) {
+                    <small>Try a different search term</small>
+                    }
+                </div>
+            </ng-template>
+
+            <!-- Loading -->
+            <ng-template pTemplate="loadingicon">
+                <i class="pi pi-spin pi-spinner"></i>
+            </ng-template>
+        </p-tree>
+    </div>
+
+    <!-- Footer con selezione corrente -->
+    @if (hasSelection()) {
+    <div class="selector-footer">
+        <div class="selected-properties">
+            <div class="footer-header">
+                <span class="footer-title">Selected Properties:</span>
+                <p-button icon="pi pi-times" [text]="true" size="small" (onClick)="clearSelection()"
+                    severity="secondary">
+                </p-button>
+            </div>
+
+            <div class="selected-chips">
+                @for (node of selectedNodes; track node.key) {
+                <p-chip [label]="node.label" [removable]="true" (onRemove)="removeSelectedNode(node)"
+                    styleClass="selected-property-chip">
+                </p-chip>
+                }
+            </div>
+        </div>
+    </div>
+    }
+</div>

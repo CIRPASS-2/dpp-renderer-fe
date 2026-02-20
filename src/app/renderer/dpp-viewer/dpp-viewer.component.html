@@ -1,0 +1,27 @@
+@if(!showScanner) {
+<div class="dpp-viewer-container">
+    <div class="actions">
+        <p-button label="Scan code" icon="pi pi-qrcode" [outlined]="true" (onClick)="openScanner()"
+            severity="secondary" />
+
+        <p-button label="Fetch DPP" icon="pi pi-check" (onClick)="fetch()" [disabled]="!hasUrl()" severity="success" />
+    </div>
+
+    <div class="url-input-row">
+        <span class="p-input-icon-left input-wrapper">
+            <i class="pi pi-globe"></i>
+            <input type="text" pInputText [(ngModel)]="url" placeholder="https://example.com/dpp-instance"
+                class="w-full" [pTooltip]="url || 'Enter a URL'" tooltipPosition="top" />
+        </span>
+    </div>
+    @if (fetchResult){
+    @if(fetchResult.kind==='jsonld'){
+    <app-dpp-renderer [expandedJsonLd]="asJsonLd"></app-dpp-renderer>
+    } @else {
+    <app-plain-json-renderer [data]="asJson"></app-plain-json-renderer>
+    }
+    }
+</div>
+} @else {
+<app-scanner (scanCompleted)="onScanCompleted($event)" (done)="onDoneScanner()"></app-scanner>
+}

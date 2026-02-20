@@ -1,0 +1,12 @@
+<div class="cc-card">
+  <span class="cc-label">Classification Code</span>
+  <div class="cc-body">
+    <p-chip [label]="codeValue ?? '—'" styleClass="cc-chip" />
+    @if (codeSet) {
+    <span class="cc-set">{{ codeSet }}</span>
+    }
+    @if (dictRef) {
+    <a [href]="dictRef" target="_blank" rel="noopener" class="cc-link">Reference ↗</a>
+    }
+  </div>
+</div>

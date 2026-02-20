@@ -1,0 +1,82 @@
+@if (isIriOnly) {
+<div class="actor-iri-badge" [pTooltip]="node['@id']" tooltipPosition="top">
+    <span class="actor-iri-icon">🔗</span>
+    <span class="actor-iri-label">External Actor</span>
+    <a [href]="node['@id']" target="_blank" rel="noopener" class="actor-iri-link">
+        {{ shortIri }}
+    </a>
+</div>
+} @else {
+<p-card [styleClass]="cardStyle">
+    <ng-template pTemplate="title">
+        <div class="actor-title-row">
+            <span class="actor-icon">{{ personIcon }}</span>
+            <span>{{ displayName }}</span>
+            @if (operatorId) {
+            <code class="actor-id">{{ operatorId }}</code>
+            }
+        </div>
+    </ng-template>
+
+    <ng-template pTemplate="content">
+        @if (roles.length > 0) {
+        <div class="actor-roles">
+            @for (role of roles; track role.uri) {
+            <p-tag [value]="role.label" severity="info" styleClass="role-tag" />
+            }
+        </div>
+        }
+
+        <div class="actor-fields">
+            @if (tradeName) {
+            <div class="field-item">
+                <span class="field-label">Trade Name</span>
+                <span class="field-value">{{ tradeName }}</span>
+            </div>
+            }
+            @if (trademark) {
+            <div class="field-item">
+                <span class="field-label">Trademark</span>
+                <span class="field-value">{{ trademark }}</span>
+            </div>
+            }
+            @if (contacts.length > 0) {
+            <div class="field-item">
+                <span class="field-label">Contact</span>
+                <div class="field-multi">
+                    @for (c of contacts; track c) {
+                    <span class="field-value">{{ c }}</span>
+                    }
+                </div>
+            </div>
+            }
+            @if (postalAddress) {
+            <div class="field-item">
+                <span class="field-label">Address</span>
+                <span class="field-value">{{ postalAddress }}</span>
+            </div>
+            }
+        </div>
+
+        @if (facilities.length > 0) {
+        <p-divider />
+        <div class="actor-section-label">Facilities</div>
+        <div class="facilities-list">
+            @for (fac of facilities; track fac['@id'] ?? $index) {
+            <div class="facility-item">
+                <span class="facility-icon">🏭</span>
+                <span>{{ facilityLabel(fac) }}</span>
+            </div>
+            }
+        </div>
+        }
+
+        @if (node['@id']) {
+        <p-divider />
+        <a [href]="node['@id']" target="_blank" rel="noopener" class="actor-iri-footer">
+            {{ node['@id'] }}
+        </a>
+        }
+    </ng-template>
+</p-card>
+}

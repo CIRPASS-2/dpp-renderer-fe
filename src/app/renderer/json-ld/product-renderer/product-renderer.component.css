@@ -1,0 +1,10 @@
+.product-header { display: flex; gap: 1.5rem; align-items: flex-start; padding: 1rem; }
+    .product-image  { width: 120px; height: 120px; object-fit: contain; border-radius: 8px; border: 1px solid #dee2e6; }
+    .product-title-block { display: flex; flex-direction: column; gap: 0.25rem; }
+    .product-name   { margin: 0; font-size: 1.4rem; font-weight: 600; }
+    .product-id     { font-size: 0.8rem; color: #6c757d; font-family: monospace; }
+    .product-description { color: #495057; line-height: 1.6; margin-bottom: 0.5rem; }
+    .field-grid     { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.75rem; }
+    .field-item     { display: flex; flex-direction: column; gap: 0.2rem; }
+    .field-label    { font-size: 0.75rem; font-weight: 600; color: #6c757d; text-transform: uppercase; letter-spacing: 0.05em; }
+    .field-value    { font-size: 0.95rem; color: #212529; }

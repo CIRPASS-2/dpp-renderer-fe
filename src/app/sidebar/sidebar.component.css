@@ -1,0 +1,119 @@
+.sidebar {
+  width: 280px;
+  height: 100vh;
+  background: #f5f5f5;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid #e0e0e0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  overflow-y: auto;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.05);
+}
+
+.sidebar-logo {
+  padding: 2rem 1.5rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-bottom: 1px solid #e0e0e0;
+  background: #ffffff;
+}
+
+.logo-image {
+  max-width: 180px;
+  height: auto;
+  object-fit: contain;
+}
+
+.sidebar-menu {
+  flex: 1;
+  padding: 1rem 0;
+}
+
+.sidebar  .sidebar-panel-menu {
+  border: none;
+  background: transparent;
+}
+
+.sidebar  .sidebar-panel-menu .p-panelmenu-header {
+  background: transparent;
+  border: none;
+  margin-bottom: 0.25rem;
+}
+
+.sidebar  .sidebar-panel-menu .p-panelmenu-header-link {
+  padding: 1rem 1.5rem;
+  border-radius: 0;
+  background: transparent;
+  border: none;
+  color: #495057;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.sidebar  .sidebar-panel-menu .p-panelmenu-header-link:hover {
+  background: #e3f2fd;
+  color: #1976d2;
+}
+
+.sidebar  .sidebar-panel-menu .p-panelmenu-header-link:focus {
+  box-shadow: none;
+}
+
+.sidebar  .sidebar-panel-menu .p-panelmenu-header-link .p-menuitem-icon {
+  margin-right: 0.75rem;
+  color: inherit;
+  font-size: 1.25rem;
+}
+
+.sidebar  .sidebar-panel-menu .p-panelmenu-header.p-highlight .p-panelmenu-header-link {
+  background: #1976d2;
+  color: #ffffff;
+}
+
+.sidebar  .sidebar-panel-menu .p-panelmenu-header.p-highlight .p-panelmenu-header-link:hover {
+  background: #1565c0;
+}
+
+.sidebar  .sidebar-panel-menu .p-panelmenu-header-link .p-submenu-icon {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    width: 240px;
+  }
+
+  .sidebar-logo {
+    padding: 1.5rem 1rem;
+  }
+
+  .logo-image {
+    max-width: 150px;
+  }
+
+  .sidebar  .sidebar-panel-menu .p-panelmenu-header-link {
+    padding: 0.875rem 1rem;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 576px) {
+  .sidebar {
+    width: 100%;
+    height: auto;
+    position: relative;
+    border-right: none;
+    border-bottom: 1px solid #e0e0e0;
+  }
+
+  .sidebar-logo {
+    padding: 1rem;
+  }
+
+  .logo-image {
+    max-width: 120px;
+  }
+}

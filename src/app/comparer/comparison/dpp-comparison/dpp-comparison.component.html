@@ -1,0 +1,126 @@
+<div class="dpp-comparison-container">
+    <div class="comparison-header">
+        <div class="header-left">
+            <h2>DPP Comparison</h2>
+            <p-badge [value]="getDifferencesCount() + ' differences'" [severity]="getDifferencesBadgeSeverity()">
+            </p-badge>
+        </div>
+
+        <div class="header-actions">
+            <p-button label="Run Compairson" icon="pi pi-play-circle" [outlined]="true" [severity]="'primary'"
+                (onClick)="runComparison()">
+            </p-button>
+            <p-button label="Show Only Differences" icon="pi pi-filter" [outlined]="!showOnlyDifferences"
+                [severity]="showOnlyDifferences ? 'success' : 'secondary'" (onClick)="onToggleDifferences()">
+            </p-button>
+
+            <p-button label="Export CSV" icon="pi pi-download" severity="secondary" [outlined]="true"
+                (onClick)="exportToCSV()">
+            </p-button>
+        </div>
+    </div>
+
+    <p-table [value]="displayedRows" [scrollable]="true" scrollHeight="calc(100vh - 250px)" [loading]="loading"
+        styleClass="p-datatable-sm p-datatable-striped" responsiveLayout="scroll">
+
+        <ng-template pTemplate="header">
+            <tr>
+                <th class="property-column">
+                    <div class="property-header">
+                        <i class="pi pi-list"></i>
+                        <span>Property</span>
+                    </div>
+                </th>
+                @for (col of columns; track col.dppId) {
+                <th class="dpp-column">
+                    <div class="dpp-header">
+                        <i class="pi pi-box"></i>
+                        <div class="dpp-info">
+                            <span class="dpp-label">{{ col.dppLabel }}</span>
+                            <span class="dpp-id">{{ col.dppId }}</span>
+                        </div>
+                    </div>
+                </th>
+                }
+            </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-row>
+            <tr>
+                <td class="property-column">
+                    <div class="property-cell" [ngStyle]="getPropertyLabelStyle(row)">
+                        @if (row.isNested) {
+                        <i class="pi pi-angle-right nested-icon"></i>
+                        }
+                        <span [class.property-different]="row.isDifferent" [class.property-nested]="row.isNested">
+                            {{ row.propertyLabel }}
+                        </span>
+                        @if (row.isDifferent) {
+                        <p-tag value="DIFF" severity="warning" [rounded]="true" styleClass="ml-2">
+                        </p-tag>
+                        }
+                    </div>
+                </td>
+
+                @for (col of columns; track col.dppId) {
+                <td [ngClass]="getCellClass(row, col.dppId)">
+                    <div class="value-cell">
+                        @if (row.values.get(col.dppId); as propValue) {
+                        @if (propValue.isMissing) {
+                        <span class="value-missing">
+                            <i class="pi pi-minus"></i>
+                            <span>N/A</span>
+                        </span>
+                        }
+
+                        @if (!propValue.isMissing && typeof propValue.value === 'boolean') {
+                        <span [class.value-true]="propValue.value" [class.value-false]="!propValue.value">
+                            <i [class]="propValue.value ? 'pi pi-check' : 'pi pi-times'"></i>
+                            <span>{{ propValue.displayValue }}</span>
+                        </span>
+                        }
+
+                        @if (!propValue.isMissing && typeof propValue.value === 'number') {
+                        <span class="value-number">
+                            {{ propValue.displayValue }}
+                        </span>
+                        }
+
+                        @if (!propValue.isMissing &&
+                        typeof propValue.value !== 'boolean' &&
+                        typeof propValue.value !== 'number') {
+                        <span class="value-text">
+                            {{ propValue.displayValue }}
+                        </span>
+                        }
+                        }
+                    </div>
+                </td>
+                }
+            </tr>
+        </ng-template>
+
+        <ng-template pTemplate="emptymessage">
+            <tr>
+                <td [attr.colspan]="columns.length + 1" class="text-center">
+                    <div class="empty-state">
+                        <i class="pi pi-inbox" style="font-size: 3rem"></i>
+                        <p>No comparison data available</p>
+                    </div>
+                </td>
+            </tr>
+        </ng-template>
+
+        <ng-template pTemplate="loadingbody">
+            <tr>
+                <td [attr.colspan]="columns.length + 1">
+                    <div class="loading-state">
+                        <p-progressSpinner styleClass="w-4rem h-4rem" strokeWidth="4">
+                        </p-progressSpinner>
+                        <p>Loading comparison data...</p>
+                    </div>
+                </td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>

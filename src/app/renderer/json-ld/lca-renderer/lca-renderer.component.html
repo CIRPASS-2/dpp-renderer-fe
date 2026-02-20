@@ -1,0 +1,51 @@
+<p-card styleClass="lca-card">
+      <ng-template pTemplate="title">
+        <div class="lca-title-row">
+          <span>🌿</span>
+          <span>{{ footprintLabel }}</span>
+        </div>
+      </ng-template>
+
+      <ng-template pTemplate="content">
+        @if (impacts.length === 0) {
+          <span class="lca-empty">No impact data available</span>
+        } @else {
+          <div class="lca-grid">
+            @for (entry of impacts; track $index) {
+              <div class="lca-impact-card">
+                <div class="lca-cat-label">{{ entry.categoryLabel }}</div>
+                <div class="lca-indicator">{{ entry.indicatorLabel }}</div>
+                <div class="lca-value-row">
+                  @if (entry.value !== null) {
+                    <span class="lca-value">{{ formatValue(entry.value) }}</span>
+                    @if (entry.unit) {
+                      <span class="lca-unit">{{ entry.unit }}</span>
+                    }
+                  } @else {
+                    <span class="lca-no-value">—</span>
+                  }
+                </div>
+                @if (entry.method) {
+                  <div class="lca-method" [pTooltip]="entry.method" tooltipPosition="top">
+                    {{ entry.method }}
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        }
+
+        @if (methodologyName) {
+          <p-divider />
+          <div class="lca-methodology">
+            <span class="lca-method-label">Methodology:</span>
+            <span>{{ methodologyName }}</span>
+          </div>
+        }
+
+        @if (node['@id']) {
+          <p-divider />
+          <a [href]="node['@id']" target="_blank" rel="noopener" class="lca-iri">{{ node['@id'] }}</a>
+        }
+      </ng-template>
+    </p-card>

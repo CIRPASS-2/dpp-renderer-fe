@@ -1,0 +1,7 @@
+<div class="scanner-container">
+    <zxing-scanner #scanner (scanSuccess)="onScanComplete($event)" (scanFailure)="onScanFailure($event)"
+        (camerasNotFound)="onCameraNotFound()"></zxing-scanner>
+    <div class="actions">
+        <p-button label="Done" icon="pi pi-check" (onClick)="onDone()" severity="success" />
+    </div>
+</div>

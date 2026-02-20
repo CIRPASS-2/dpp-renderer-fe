@@ -1,0 +1,104 @@
+<p-card [styleClass]="isSoC ? 'soc-card' : 'substance-card'">
+      <ng-template pTemplate="title">
+        <div class="sub-title-row">
+          <span>{{ isSoC ? '⚠️' : '🧪' }}</span>
+          <span>{{ displayName }}</span>
+          @if (isSoC) {
+            <p-tag value="Substance of Concern" severity="danger" />
+          }
+        </div>
+      </ng-template>
+
+      <ng-template pTemplate="content">
+        <div class="sub-ids">
+          @if (casNumber) {
+            <div class="id-badge" pTooltip="CAS Number">CAS {{ casNumber }}</div>
+          }
+          @if (ecNumber) {
+            <div class="id-badge" pTooltip="EC Number">EC {{ ecNumber }}</div>
+          }
+          @if (abbreviation) {
+            <div class="id-badge abbr-badge">{{ abbreviation }}</div>
+          }
+        </div>
+
+        <div class="sub-fields">
+          @if (iupacName) {
+            <div class="field-item">
+              <span class="field-label">IUPAC Name</span>
+              <span class="field-value">{{ iupacName }}</span>
+            </div>
+          }
+          @if (casName) {
+            <div class="field-item">
+              <span class="field-label">CAS Name</span>
+              <span class="field-value">{{ casName }}</span>
+            </div>
+          }
+          @if (tradeName) {
+            <div class="field-item">
+              <span class="field-label">Trade Name</span>
+              <span class="field-value">{{ tradeName }}</span>
+            </div>
+          }
+          @if (otherNames.length > 0) {
+            <div class="field-item">
+              <span class="field-label">Other Names</span>
+              <span class="field-value">{{ otherNames.join(', ') }}</span>
+            </div>
+          }
+          @if (location) {
+            <div class="field-item">
+              <span class="field-label">Location in Product</span>
+              <span class="field-value">{{ location }}</span>
+            </div>
+          }
+        </div>
+
+        @if (envImpact || healthImpact) {
+          <p-divider />
+          <div class="hazard-row">
+            @if (envImpact) {
+              <p-tag [value]="'Env: ' + envImpact" severity="warning" />
+            }
+            @if (healthImpact) {
+              <p-tag [value]="'Health: ' + healthImpact" severity="danger" />
+            }
+          </div>
+        }
+
+        @if (concentrationNodes.length > 0) {
+          <p-divider />
+          <div class="sub-section-label">Concentration</div>
+          <div class="sub-qp-grid">
+            @for (cn of concentrationNodes; track $index) {
+              <app-quantitative-property-renderer [node]="cn" />
+            }
+          </div>
+        }
+
+        @if (thresholdNodes.length > 0) {
+          <div class="sub-section-label" style="margin-top:.75rem">Threshold</div>
+          <div class="sub-qp-grid">
+            @for (tn of thresholdNodes; track $index) {
+              <app-quantitative-property-renderer [node]="tn" />
+            }
+          </div>
+        }
+
+        @if (lifeCycleStages.length > 0) {
+          <p-divider />
+          <div class="sub-section-label">Life Cycle Stages</div>
+          <div class="lcs-chips">
+            @for (s of lifeCycleStages; track s) {
+              <span class="lcs-chip">{{ s }}</span>
+            }
+          </div>
+        }
+
+        @if (node['@id']) {
+          <p-divider />
+          <a [href]="node['@id']" target="_blank" rel="noopener" class="sub-iri">{{ node['@id'] }}</a>
+        }
+      </ng-template>
+    </p-card>

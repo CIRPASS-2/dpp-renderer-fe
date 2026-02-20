@@ -1,0 +1,8 @@
+.dpp-card    { border-left: 4px solid #6366f1; }
+    .dpp-grid    { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.75rem; }
+    .full-width  { grid-column: 1 / -1; }
+    .field-item  { display: flex; flex-direction: column; gap: 0.2rem; }
+    .field-label { font-size: 0.75rem; font-weight: 600; color: #6c757d; text-transform: uppercase; letter-spacing: 0.05em; }
+    .field-value { font-size: 0.95rem; color: #212529; }
+    .field-link  { font-size: 0.85rem; word-break: break-all; color: #6366f1; }
+    .dpp-id      { font-size: 0.85rem; background: #f8f9fa; padding: 0.25rem 0.5rem; border-radius: 4px; }

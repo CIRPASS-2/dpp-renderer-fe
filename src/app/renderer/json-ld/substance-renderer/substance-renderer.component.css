@@ -1,0 +1,20 @@
+.soc-card      { border-left: 4px solid #ef4444; }
+.substance-card{ border-left: 4px solid #f59e0b; }
+.sub-title-row { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
+
+.sub-ids       { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.75rem; }
+.id-badge      { padding: 0.2rem 0.6rem; background: #1e40af; color: #fff; border-radius: 12px; font-size: 0.75rem; font-weight: 600; font-family: monospace; }
+.abbr-badge    { background: #6b7280; }
+
+.sub-fields    { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.6rem; }
+.field-item    { display: flex; flex-direction: column; gap: 0.15rem; }
+.field-label   { font-size: 0.72rem; font-weight: 600; color: #6c757d; text-transform: uppercase; letter-spacing: 0.05em; }
+.field-value   { font-size: 0.9rem; color: #212529; }
+
+.hazard-row    { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.sub-section-label { font-size: 0.72rem; font-weight: 700; color: #6c757d; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 0.4rem; }
+.sub-qp-grid   { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 0.5rem; }
+
+.lcs-chips     { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.lcs-chip      { padding: 0.2rem 0.6rem; background: #e0e7ff; color: #3730a3; border-radius: 12px; font-size: 0.78rem; }
+.sub-iri       { font-size: 0.75rem; color: #6366f1; word-break: break-all; }

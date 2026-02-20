@@ -1,0 +1,31 @@
+<p-card header="Digital Product Passport" styleClass="dpp-card">
+      <div class="dpp-grid">
+        @if (dppId) {
+          <div class="field-item full-width">
+            <span class="field-label">{{ nsUniqueId | label }}</span>
+            <code class="dpp-id">{{ dppId }}</code>
+          </div>
+        }
+        @if (status) {
+          <div class="field-item">
+            <span class="field-label">Status</span>
+            <p-tag [value]="status" [severity]="statusSeverity" />
+          </div>
+        }
+        @for (field of metaFields; track field.uri) {
+          <div class="field-item">
+            <span class="field-label">{{ field.uri | label }}</span>
+            @if (isLink(field.value)) {
+              <a [href]="field.value" target="_blank" rel="noopener" class="field-link">{{ field.value }}</a>
+            } @else {
+              <span class="field-value">{{ field.value }}</span>
+            }
+          </div>
+        }
+      </div>
+
+      @if (extraUris.length > 0) {
+        <p-divider />
+        <app-abstract-renderer [node]="node" [graph]="graph" [skipUris]="knownUris" />
+      }
+    </p-card>
