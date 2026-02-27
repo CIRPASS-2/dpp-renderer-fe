@@ -1,0 +1,26 @@
+<div class="portal-wrapper">
+    <main class="portal-card">
+        <div class="logo-wrap">
+            <img src="assets/logo.png" alt="CIRPASS2 Logo" class="portal-logo" />
+        </div>
+
+        <h1 class="portal-title">Mock EU Web Portal</h1>
+        <p class="portal-subtitle">European Digital Product Passport</p>
+
+        <div class="divider"></div>
+
+        <button class="login-btn" (click)="login()">
+            <img src="assets/oidc.png" alt="OIDC" class="oidc-logo" />
+            <span>Sign in with OpenID Connect</span>
+        </button>
+
+        <p class="portal-note">
+            Access is restricted to authorised users.<br />
+            You will be redirected to the Identity Provider.
+        </p>
+    </main>
+
+    <footer class="portal-footer">
+        🅭 {{ year }} Cirpass 2 · Mock Environment
+    </footer>
+</div>

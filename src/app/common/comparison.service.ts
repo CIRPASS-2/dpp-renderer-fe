@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment.development';
 import { ExtractionRequest, ExtractionResponse } from '../comparer/comparison/comparison.model';
 import { OntologyJsonLd, PropertySelection } from '../comparer/selector/ontology-tree.model';
+import { FieldMapping } from '../comparer/selector/ontology-tree/ontology-tree.component';
 
 const extractor = environment.backendUrl.concat("/comparison/v1")
 
@@ -16,10 +17,10 @@ export class ExtractorService {
 
   constructor(private http: HttpClient) { }
 
-  extractProperties(dppUris: string[], properties: PropertySelection): Observable<ExtractionResponse> {
+  extractProperties(dppUris: string[], properties: FieldMapping): Observable<ExtractionResponse> {
     let payload = {
       dppUrls: dppUris,
-      propertyPaths: properties.selectedPaths
+      propertyPaths: properties.propertyPaths
     } as ExtractionRequest
     return this.http.post<ExtractionResponse>(extractor, payload)
   }

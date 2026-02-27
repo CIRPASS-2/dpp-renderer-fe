@@ -1,4 +1,7 @@
 <div class="pjr-container">
+  @if (isTooDeep) {
+  <span class="pjr-value pjr-empty">[ too deeply nested ]</span>
+  } @else{
   @for (entry of entries; track entry.key) {
 
   <div class="pjr-field">
@@ -61,5 +64,6 @@
   <p-divider styleClass="pjr-divider" />
   }
 
+  }
   }
 </div>

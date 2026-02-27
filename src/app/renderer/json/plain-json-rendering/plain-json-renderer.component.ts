@@ -24,6 +24,8 @@ interface ResolvedEntry {
 })
 export class PlainJsonRendererComponent {
 
+  private static readonly MAX_DEPTH = 15;
+
   @Input({ required: true }) data!: JsonObject | JsonObject[];
 
   @Input() panelLabel?: string;
@@ -91,4 +93,8 @@ export class PlainJsonRendererComponent {
 
   trackByKey(_: number, e: ResolvedEntry) { return e.key; }
   trackByIndex(i: number) { return i; }
+
+  get isTooDeep(): boolean {
+    return this.depth >= PlainJsonRendererComponent.MAX_DEPTH;
+  }
 }

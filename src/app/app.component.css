@@ -1,21 +1,24 @@
-.app-layout {
-  display: flex;
-  min-height: 100vh;
-  background: #fafafa;
-}
-
 .main-content {
   flex: 1;
   margin-left: 280px;
   padding: 2rem;
-
   overflow-x: hidden;
+  transition: margin-left 0.3s ease;
+}
+
+.main-content.no-sidebar {
+  margin-left: 0;
+  padding: 0; 
 }
 
 @media (max-width: 768px) {
   .main-content {
-  margin-left: 240px;
-  padding: 1.5rem;
+    margin-left: 240px;
+    padding: 1.5rem;
+  }
+
+  .main-content.no-sidebar {
+    margin-left: 0;
   }
 }
 

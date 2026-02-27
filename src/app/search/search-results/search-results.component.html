@@ -1,0 +1,30 @@
+<ng-container>
+    <app-search-filters (onSearch)="doSearch($event)" [capabilities]="capabilities"></app-search-filters>
+    <p-table stripedRows styleClass="p-datatable-striped pt-3" [value]="elements" [paginator]="true"
+        (onPage)="pageChange($event)" [rows]="10" [lazy]="true" [totalRecords]="totalElements"
+        [tableStyle]="{'min-width': '50rem'}" dataKey="id">
+        <ng-template pTemplate="header" let-e>
+            <tr>
+                @for (key of dataKeys; track i; let i = $index){
+                <th>{{key | label}}</th>
+                }
+                <th>
+                    <div class="text-center">Actions</div>
+                </th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-e>
+            <tr>
+                @for (key of dataKeys; track i; let i = $index){
+                <td>{{ retrieveTableValue(e,key) }}</td>
+                }
+                <td>
+                    <div class="flex gap-1 justify-center">
+                        <p-button icon="pi pi-eye" severity="secondary" [text]="true" [rounded]="true"
+                            (click)="details(e.liveUrl)" pTooltip="Details" tooltipPosition="top" />
+                    </div>
+                </td>
+            </tr>
+        </ng-template>
+    </p-table>
+</ng-container>

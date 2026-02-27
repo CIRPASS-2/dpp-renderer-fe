@@ -1,0 +1,12 @@
+:host ::ng-deep .p-datatable.p-datatable-striped .p-datatable-tbody > tr:nth-child(odd) {
+   background: #c5f4ea; /* teal del tuo tema */
+}
+
+:host ::ng-deep .p-datatable.p-datatable-striped .p-datatable-tbody > tr:nth-child(even) {
+  background: #ffffff;
+}
+
+:host ::ng-deep .p-datatable .p-datatable-thead > tr > th {
+  background: #0D3B5E;
+  color: #ffffff;
+}

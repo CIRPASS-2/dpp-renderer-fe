@@ -1,0 +1,19 @@
+@let field=renderableField();
+<div [formGroup]="form" class="search-field-wrapper">
+    @if (field?.fieldType==='STRING' || field?.fieldType==='DECIMAL' || field?.fieldType==='INTEGER'){
+    <p-select formControlName="op" [options]="field?.availableOps ?? []" placeholder="Op." styleClass="search-field-op"
+        (onBlur)="onBlur()" />
+    }
+    @if (field?.fieldType==='DECIMAL'){
+    <p-inputnumber formControlName="literal" placeholder="Insert number" [id]="id" (blur)="onBlur()" mode="decimal"
+        [minFractionDigits]="1" [maxFractionDigits]="3" styleClass="search-field-input" />
+    } @else if (field?.fieldType==='INTEGER'){
+    <p-inputnumber formControlName="literal" placeholder="Insert number" [id]="id" (blur)="onBlur()"
+        styleClass="search-field-input" />
+    } @else if (field?.fieldType==='BOOLEAN') {
+    <p-checkbox formControlName="literal" [id]="id" [binary]="true" variant="filled" />
+    } @else {
+    <input pInputText formControlName="literal" [id]="id" placeholder="Insert text" (blur)="onBlur()"
+        class="search-field-input" />
+    }
+</div>

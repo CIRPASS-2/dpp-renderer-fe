@@ -22,6 +22,7 @@
     "@zxing/browser": "^0.1.5",
     "@zxing/library": "^0.21.3",
     "@zxing/ngx-scanner": "^19.0.0",
+    "angular-oauth2-oidc": "^19.0.0",
     "primeicons": "^7.0.0",
     "primeng": "^19.1.4",
     "rxjs": "~7.8.0",

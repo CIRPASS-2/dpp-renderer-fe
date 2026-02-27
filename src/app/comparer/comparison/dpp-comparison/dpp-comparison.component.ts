@@ -6,7 +6,7 @@ import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { TableModule } from 'primeng/table';
 import { TagModule } from 'primeng/tag';
 import { ExtractorService } from '../../../common/comparison.service';
-import { PropertySelection } from '../../selector/ontology-tree.model';
+import { FieldMapping } from '../../selector/ontology-tree/ontology-tree.component';
 import { ComparisonRow, DppColumn, ExtractionResponse } from '../comparison.model';
 import { DppComparisonService } from '../dpp-comparison.service';
 @Component({
@@ -28,7 +28,7 @@ export class DppComparisonComponent implements OnInit, OnChanges {
 
   dppUris = input<string[]>()
 
-  selectedProperties = input<PropertySelection>()
+  fieldMapping = input<FieldMapping>()
 
   showOnlyDifferences = false;
   loading = false;
@@ -45,7 +45,7 @@ export class DppComparisonComponent implements OnInit, OnChanges {
     }
   }
 
- 
+
   private processData(): void {
     if (!this.comparisonData()) {
       return;
@@ -110,7 +110,7 @@ export class DppComparisonComponent implements OnInit, OnChanges {
     return {};
   }
 
- 
+
   getPropertyIcon(row: ComparisonRow): string {
     return row.isNested ? 'pi pi-angle-right' : '';
   }

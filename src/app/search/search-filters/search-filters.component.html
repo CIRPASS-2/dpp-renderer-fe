@@ -1,0 +1,25 @@
+<p-accordion value="0" expandIcon="pi pi-filter-fill" collapseIcon="pi pi-filter-fill">
+    <p-accordion-panel value="0">
+        <p-accordion-header>Search params</p-accordion-header>
+        <p-accordion-content>
+            @if(filterForm){
+            <form [formGroup]="filterForm" (ngSubmit)="onSubmit()" class="filter-form">
+                <ng-container formArrayName="filters">
+                    <div class="filter-grid">
+                        @for (field of renderableFields; track field.fieldName; let i = $index) {
+                        <div class="filter-field">
+                            <label>{{ field.fieldLabel }}</label>
+                            <app-search-field [formControlName]="i" [renderableField]="field" />
+                        </div>
+                        }
+                    </div>
+                </ng-container>
+                <div style="display: flex; gap: 0.5rem;">
+                    <p-button type="submit" class="search-btn">Search</p-button>
+                    <p-button severity="secondary" (onClick)="clear()" class="search-btn">Clear</p-button>
+                </div>
+            </form>
+            }
+        </p-accordion-content>
+    </p-accordion-panel>
+</p-accordion>

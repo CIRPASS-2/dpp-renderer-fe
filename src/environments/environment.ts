@@ -1,3 +1,7 @@
 export const environment = {
-    backendUrl: ''
+    backendUrl: '',
+    capabilitiesUrl:'',
+    oidcIssuer:'',
+    oidcClientId:'',
+    oidcHttps:true,
 };

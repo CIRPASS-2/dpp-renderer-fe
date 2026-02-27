@@ -32,18 +32,28 @@
   padding: 1rem 0;
 }
 
-.sidebar  .sidebar-panel-menu {
+:host ::ng-deep .sidebar-panel-menu .p-panelmenu-panel,
+:host ::ng-deep .sidebar-panel-menu .p-panelmenu-header,
+:host ::ng-deep .sidebar-panel-menu .p-panelmenu-header .p-panelmenu-header-content,
+:host ::ng-deep .sidebar-panel-menu .p-panelmenu-content,
+:host ::ng-deep .sidebar-panel-menu .p-menuitem,
+:host ::ng-deep .sidebar-panel-menu .p-menuitem-content {
+  background: transparent !important;
+  border: none !important;
+}
+
+.sidebar .sidebar-panel-menu {
   border: none;
   background: transparent;
 }
 
-.sidebar  .sidebar-panel-menu .p-panelmenu-header {
+.sidebar .sidebar-panel-menu .p-panelmenu-header {
   background: transparent;
   border: none;
   margin-bottom: 0.25rem;
 }
 
-.sidebar  .sidebar-panel-menu .p-panelmenu-header-link {
+.sidebar .sidebar-panel-menu .p-panelmenu-header-link {
   padding: 1rem 1.5rem;
   border-radius: 0;
   background: transparent;
@@ -53,32 +63,47 @@
   transition: all 0.2s ease;
 }
 
-.sidebar  .sidebar-panel-menu .p-panelmenu-header-link:hover {
-  background: #e3f2fd;
-  color: #1976d2;
+.sidebar .sidebar-panel-menu .p-panelmenu-header-link:hover {
+  background: rgba(232, 112, 26, 0.1);
+  color: #E8701A;
 }
 
-.sidebar  .sidebar-panel-menu .p-panelmenu-header-link:focus {
+.sidebar .sidebar-panel-menu .p-panelmenu-header-link:focus {
   box-shadow: none;
 }
 
-.sidebar  .sidebar-panel-menu .p-panelmenu-header-link .p-menuitem-icon {
+.sidebar .sidebar-panel-menu .p-panelmenu-header-link .p-menuitem-icon {
   margin-right: 0.75rem;
   color: inherit;
   font-size: 1.25rem;
 }
 
-.sidebar  .sidebar-panel-menu .p-panelmenu-header.p-highlight .p-panelmenu-header-link {
-  background: #1976d2;
+.sidebar .sidebar-panel-menu .p-panelmenu-header.p-highlight .p-panelmenu-header-link {
+  background: #E8701A;
   color: #ffffff;
 }
 
-.sidebar  .sidebar-panel-menu .p-panelmenu-header.p-highlight .p-panelmenu-header-link:hover {
-  background: #1565c0;
+.sidebar .sidebar-panel-menu .p-panelmenu-header.p-highlight .p-panelmenu-header-link:hover {
+  background: #c95e12;
 }
 
-.sidebar  .sidebar-panel-menu .p-panelmenu-header-link .p-submenu-icon {
+.sidebar .sidebar-panel-menu .p-panelmenu-header-link .p-submenu-icon {
   display: none;
+}
+
+[class^="icon-"] {
+  display: inline-block;
+  width: 1.25rem;
+  height: 1.25rem;
+  background: currentColor;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  margin-right: 0.75rem;
+  flex-shrink: 0;
 }
 
 @media (max-width: 768px) {
@@ -94,7 +119,7 @@
     max-width: 150px;
   }
 
-  .sidebar  .sidebar-panel-menu .p-panelmenu-header-link {
+  .sidebar .sidebar-panel-menu .p-panelmenu-header-link {
     padding: 0.875rem 1rem;
     font-size: 0.9rem;
   }

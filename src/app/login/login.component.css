@@ -1,0 +1,130 @@
+@import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;600;700&family=Source+Sans+3:wght@300;400;600&display=swap');
+
+:host {
+  display: block;
+  height: 100vh;
+  width: 100%;
+}
+
+.portal-wrapper {
+  position: relative;
+  min-height: 100vh;
+  width:100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Source Sans 3', sans-serif;
+  background: #f4f6f9;
+}
+
+.portal-card {
+  background: #ffffff;
+  border-radius: 8px;
+  width: min(440px, 90vw);
+  padding: 48px 40px 40px;
+  box-shadow:
+    0 1px 3px rgba(13, 59, 94, 0.08),
+    0 8px 32px rgba(13, 59, 94, 0.12);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: cardIn 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+  border-top: 5px solid transparent;
+  border-image: linear-gradient(90deg, #E8701A 0%, #2BAA8F 50%, #0D3B5E 100%) 1;
+}
+
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Logo ───────────────────────────────────────────── */
+.logo-wrap {
+  margin-bottom: 8px;
+}
+
+.portal-logo {
+  height: 80px;
+  width: auto;
+  object-fit: contain;
+}
+
+.portal-title {
+  font-family: 'Exo 2', sans-serif;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #0D3B5E;
+  margin: 14px 0 0;
+  text-align: center;
+  letter-spacing: 0.01em;
+}
+
+.portal-subtitle {
+  font-size: 0.8rem;
+  color: #2BAA8F;
+  margin: 6px 0 0;
+  text-align: center;
+  font-weight: 600;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+
+.divider {
+  width: 56px;
+  height: 3px;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #E8701A, #2BAA8F, #0D3B5E);
+  margin: 28px auto;
+}
+
+.login-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #E8701A;
+  color: #ffffff;
+  border: none;
+  border-radius: 4px;
+  padding: 14px 32px;
+  font-family: 'Source Sans 3', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  letter-spacing: 0.03em;
+  box-shadow: 0 2px 10px rgba(232, 112, 26, 0.35);
+  width: 100%;
+  justify-content: center;
+}
+
+.login-btn:hover {
+  background: #c95e12;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(232, 112, 26, 0.45);
+}
+
+.login-btn:active {
+  transform: translateY(0);
+}
+
+.oidc-logo {
+  height: 22px;
+  width: auto;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+}
+
+.portal-note {
+  font-size: 0.78rem;
+  color: #7a9bb5;
+  text-align: center;
+  margin: 20px 0 0;
+  line-height: 1.7;
+}
+
+.portal-footer {
+  margin-top: 24px;
+  font-size: 0.73rem;
+  color: #7a9bb5;
+  letter-spacing: 0.04em;
+}

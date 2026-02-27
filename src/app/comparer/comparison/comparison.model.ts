@@ -1,8 +1,10 @@
+import { PropertyPathsMap } from "../selector/ontology-tree.model"
+
 export interface ExtractionRequest {
   ontologyUrl: string
   fallbackNsURI: string
   dppUrls: string[]
-  propertyPaths: string[]
+  propertyPaths: PropertyPathsMap
 }
 
 export interface ExtractionResponse {

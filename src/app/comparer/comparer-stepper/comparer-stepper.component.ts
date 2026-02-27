@@ -6,7 +6,7 @@ import { ExtractionResponse } from '../comparison/comparison.model';
 import { DppComparisonComponent } from '../comparison/dpp-comparison/dpp-comparison.component';
 import { DppUrisComponent } from '../comparison/dpp-uris/dpp-uris.component';
 import { PropertySelection } from '../selector/ontology-tree.model';
-import { OntologyTreeComponent } from '../selector/ontology-tree/ontology-tree.component';
+import { FieldMapping, OntologyTreeComponent } from '../selector/ontology-tree/ontology-tree.component';
 import { DelegatingMessaggeService } from '../../common/delegating-messagge.service';
 
 @Component({
@@ -17,7 +17,7 @@ import { DelegatingMessaggeService } from '../../common/delegating-messagge.serv
 })
 export class ComparerStepperComponent {
 
-  selectedProperties?: PropertySelection
+  fieldMapping?: FieldMapping
 
   comparisonData?: ExtractionResponse
 
@@ -25,8 +25,8 @@ export class ComparerStepperComponent {
 
   constructor(private extractorService: ExtractorService,private delegatingMessageService:DelegatingMessaggeService) { }
 
-  onPropertiesSelected(event: PropertySelection) {
-    this.selectedProperties = event
+  onFieldMappingChanged(event: FieldMapping) {
+    this.fieldMapping = event
   }
 
   onUrlsSubmitted(event: any) {
@@ -38,13 +38,12 @@ export class ComparerStepperComponent {
   }
 
   hasPropertiesForNext(): boolean {
-    return this.selectedProperties != null && this.selectedProperties != undefined
+    return this.fieldMapping != null && this.fieldMapping != undefined
   }
 
   runComparison() {
-    const props = this.selectedProperties;
     const uris = this.urls
-    this.extractorService.extractProperties(uris!, props!).subscribe({
+    this.extractorService.extractProperties(uris!, this.fieldMapping!).subscribe({
       next: (data) => {
         this.comparisonData = data
       },

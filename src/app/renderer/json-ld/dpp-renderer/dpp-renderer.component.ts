@@ -14,6 +14,7 @@ import { OntologyRegistryService } from '../ontology-registry.service';
 import { ProductRendererComponent } from '../product-renderer/product-renderer.component';
 import { QuantitativePropertyRendererComponent } from '../quantitative-property-renderer/quantitative-property-renderer.component';
 import { SubstanceRendererComponent } from '../substance-renderer/substance-renderer.component';
+
 export interface ResolvedNode {
   node: JsonLdNode;
   category: RenderCategory;
@@ -21,20 +22,32 @@ export interface ResolvedNode {
 
 @Component({
   selector: 'app-dpp-renderer',
-  imports: [ProgressSpinnerModule, SubstanceRendererComponent, LcaRendererComponent, DocumentRendererComponent, ActorRendererComponent, FacilityRendererComponent, MessageModule, ProductRendererComponent, AbstractRendererComponent, DppInfoRendererComponent, ClassificationCodeRendererComponent, QuantitativePropertyRendererComponent],
+  imports: [
+    ProgressSpinnerModule,
+    MessageModule,
+    SubstanceRendererComponent,
+    LcaRendererComponent,
+    DocumentRendererComponent,
+    ActorRendererComponent,
+    FacilityRendererComponent,
+    ProductRendererComponent,
+    AbstractRendererComponent,
+    DppInfoRendererComponent,
+    ClassificationCodeRendererComponent,
+    QuantitativePropertyRendererComponent,
+  ],
   templateUrl: './dpp-renderer.component.html',
-  styleUrl: './dpp-renderer.component.css'
+  styleUrl: './dpp-renderer.component.css',
 })
 export class DppRendererComponent implements OnChanges {
-
   @Input({ required: true }) expandedJsonLd!: ExpandedJsonLd;
 
   resolvedNodes: ResolvedNode[] = [];
-  /** Flat id→node map built once from the expanded graph – for @id resolution. */
   graph: Map<string, JsonLdNode> = new Map();
   error?: string;
+  loading = true;
 
-  constructor(private registry: OntologyRegistryService) { }
+  constructor(private registry: OntologyRegistryService) {}
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['expandedJsonLd']) {
@@ -43,12 +56,14 @@ export class DppRendererComponent implements OnChanges {
   }
 
   private process(): void {
+    this.loading = true;
     this.error = undefined;
     this.graph = new Map();
     this.resolvedNodes = [];
 
     if (!Array.isArray(this.expandedJsonLd) || this.expandedJsonLd.length === 0) {
       this.error = 'Empty or invalid JSON-LD document.';
+      this.loading = false;
       return;
     }
 
@@ -61,33 +76,25 @@ export class DppRendererComponent implements OnChanges {
     for (const node of this.expandedJsonLd) {
       const types = (node['@type'] as string[]) ?? [];
 
-      // Skip IRI-only reference nodes since they exist only as pointers, not as
-      // standalone data nodes and will be resolved by child renderers
       if (isIriOnlyRef(node)) continue;
 
-      if (types.length === 1 && types[0].endsWith('Role') && Object.keys(node).filter(k => k !== '@id' && k !== '@type').length === 0) continue;
+      if (
+        types.length === 1 &&
+        types[0].endsWith('Role') &&
+        Object.keys(node).filter(k => k !== '@id' && k !== '@type').length === 0
+      ) continue;
 
       const category = this.registry.resolveCategory(types);
       this.resolvedNodes.push({ node, category });
     }
-    if (this.resolvedNodes) {
-      this.resolvedNodes.sort((a, b) => this.sortPriority(a) - this.sortPriority(b));
-    }
+
+    this.resolvedNodes.sort((a, b) => this.sortPriority(a) - this.sortPriority(b));
+    this.loading = false;
   }
 
   private sortPriority(r: ResolvedNode): number {
-    if (r.category === 'dpp') return 0;  
-    if (r.category === 'product') return 1;  
+    if (r.category === 'dpp') return 0;
+    if (r.category === 'product') return 1;
     return 2;
   }
 }
-
-
-
-
-
-
-
-
-
-

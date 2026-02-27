@@ -1,8 +1,16 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnChanges } from '@angular/core';
 import { DividerModule } from 'primeng/divider';
 import { FieldsetModule } from 'primeng/fieldset';
-import { JsonLdNode, JsonLdPropertyValue, extractPropertyUris, isIriOnlyRef, isJsonLdNode, isJsonLdValue } from '../../rendering-models';
+import {
+  JsonLdNode,
+  JsonLdPropertyValue,
+  extractPropertyUris,
+  isIriOnlyRef,
+  isJsonLdNode,
+  isJsonLdValue,
+} from '../../rendering-models';
 import { OntologyRegistryService } from '../ontology-registry.service';
+
 interface FieldRow {
   label: string;
   values: FieldValue[];
@@ -18,16 +26,22 @@ interface FieldValue {
   selector: 'app-abstract-renderer',
   imports: [DividerModule, FieldsetModule],
   templateUrl: './abstract-renderer.component.html',
-  styleUrl: './abstract-renderer.component.css'
+  styleUrl: './abstract-renderer.component.css',
 })
-export class AbstractRendererComponent {
-
+export class AbstractRendererComponent implements OnChanges {
   @Input({ required: true }) node!: JsonLdNode;
   @Input() graph: Map<string, JsonLdNode> = new Map();
-  /** URIs to exclude (used by parent renderers to skip already-rendered fields) */
   @Input() skipUris: string[] = [];
+  /** Tracks already-rendered @id values to prevent circular recursion */
+  @Input() visited: Set<string> = new Set();
 
-  constructor(private registry: OntologyRegistryService) { }
+  private _fields: FieldRow[] = [];
+
+  constructor(private registry: OntologyRegistryService) {}
+
+  ngOnChanges(): void {
+    this._fields = this.buildFields();
+  }
 
   get legend(): string {
     const types = (this.node['@type'] as string[]) ?? [];
@@ -37,7 +51,30 @@ export class AbstractRendererComponent {
   }
 
   get fields(): FieldRow[] {
+    return this._fields;
+  }
+
+  isIriOnly(node: JsonLdNode): boolean {
+    return isIriOnlyRef(node);
+  }
+
+  childVisited(node: JsonLdNode): Set<string> {
+    const next = new Set(this.visited);
+    const selfId = this.node['@id'] as string | undefined;
+    if (selfId) next.add(selfId);
+    const childId = node['@id'] as string | undefined;
+    if (childId) next.add(childId);
+    return next;
+  }
+
+  private buildFields(): FieldRow[] {
     const skip = new Set(this.skipUris);
+    const selfId = this.node['@id'] as string | undefined;
+
+    // Mark current node as visited for child resolution
+    const currentVisited = new Set(this.visited);
+    if (selfId) currentVisited.add(selfId);
+
     const rows: FieldRow[] = [];
 
     for (const uri of extractPropertyUris(this.node)) {
@@ -49,14 +86,24 @@ export class AbstractRendererComponent {
         if (isJsonLdValue(item)) {
           return { kind: 'literal', text: String(item['@value']) };
         }
+
         if (isJsonLdNode(item)) {
           const id = item['@id'] as string | undefined;
+
+          // ← stop recursion: if already visited render as IRI link only
+          if (id && currentVisited.has(id)) {
+            return { kind: 'iri', text: id };
+          }
+
           const resolved = (id ? this.graph.get(id) : undefined) ?? item;
+
           if (isIriOnlyRef(resolved)) {
             return { kind: 'iri', text: id ?? '', node: resolved };
           }
+
           return { kind: 'node', text: id ?? '', node: resolved };
         }
+
         return { kind: 'iri', text: (item as any)['@id'] ?? '' };
       });
 
@@ -65,11 +112,7 @@ export class AbstractRendererComponent {
         values,
       });
     }
+
     return rows;
   }
-
-  isIriOnly(node: JsonLdNode): boolean {
-    return isIriOnlyRef(node);
-  }
-
 }

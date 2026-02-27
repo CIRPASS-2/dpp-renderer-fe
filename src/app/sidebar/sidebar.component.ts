@@ -20,6 +20,13 @@ export class SidebarComponent implements OnInit {
   ngOnInit(): void {
     this.menuItems = [
       {
+        label: 'Model Level DPP Search',
+        icon: 'pi pi-search',
+        command: () => {
+          this.router.navigate(['/search']);
+        }
+      },
+      {
         label: 'DPP Viewer',
         icon: 'pi pi-eye',
         command: () => {

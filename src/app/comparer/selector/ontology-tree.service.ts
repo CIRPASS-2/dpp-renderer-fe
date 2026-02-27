@@ -3,7 +3,8 @@ import { TreeNode } from 'primeng/api';
 import {
   OntologyJsonLd,
   PropertyData,
-  PropertyTreeNode
+  PropertyTreeNode,
+  splitUri,
 } from './ontology-tree.model';
 
 /**
@@ -175,7 +176,7 @@ export class OntologyTreeService {
     };
   }
 
- 
+
   private isContainerProperty(prop: any): boolean {
     const propId = prop['@id'];
     const propName = this.extractLocalName(propId);
@@ -334,6 +335,9 @@ export class OntologyTreeService {
     const rangeType = ranges.length > 0 ? this.getId(ranges[0]) : undefined;
     const dataType = this.determineDataType(rangeType);
 
+    // ── namespace / localName / uri ──────────────────────────────────────────
+    const { namespace, localName } = splitUri(propId);
+
     return {
       key: this.generateKey(),
       label: label || propName,
@@ -341,9 +345,14 @@ export class OntologyTreeService {
         id: propId,
         type: this.getValue(prop, this.RDF_TYPE).map(t => this.getId(t) || ''),
         path: fullPath,
+        label: label || propName,
         range: rangeType,
         comment: this.getString(this.getValue(prop, this.RDFS_COMMENT)),
-        dataType
+        dataType,
+        // ── new fields ───────────────────────────────────────────────────────
+        uri: propId,
+        namespace,
+        localName,
       },
       leaf: true,
       selectable: true,
@@ -358,8 +367,8 @@ export class OntologyTreeService {
   private createSimplePropertyNode(prop: any, parentPath: string = ''): PropertyTreeNode {
     const propId = prop['@id'];
     const label = this.getString(this.getValue(prop, this.RDFS_LABEL));
-    const localName = this.extractLocalName(propId);
-    const path = parentPath ? `${parentPath}/${localName}` : `${localName}`;
+    const propLocalName = this.extractLocalName(propId);
+    const path = parentPath ? `${parentPath}/${propLocalName}` : `${propLocalName}`;
 
     const ranges = this.getValue(prop, this.RDFS_RANGE);
     const rangeType = ranges.length > 0 ? this.getId(ranges[0]) : undefined;
@@ -368,9 +377,12 @@ export class OntologyTreeService {
     const domains = this.getValue(prop, this.RDFS_DOMAIN);
     const domain = domains.length > 0 ? this.getId(domains[0]) : undefined;
 
+    // ── namespace / localName / uri ──────────────────────────────────────────
+    const { namespace, localName } = splitUri(propId);
+
     return {
       key: this.generateKey(),
-      label: label || localName,
+      label: label || propLocalName,
       data: {
         id: propId,
         type: this.getValue(prop, this.RDF_TYPE).map(t => this.getId(t) || ''),
@@ -378,7 +390,11 @@ export class OntologyTreeService {
         domain,
         range: rangeType,
         comment: this.getString(this.getValue(prop, this.RDFS_COMMENT)),
-        dataType
+        dataType,
+        // ── new fields ───────────────────────────────────────────────────────
+        uri: propId,
+        namespace,
+        localName,
       },
       leaf: true,
       selectable: true,
@@ -388,7 +404,7 @@ export class OntologyTreeService {
   }
 
   /**
-   * Find all subclass of class (direct and inderect) recursively
+   * Find all subclass of class (direct and indirect) recursively
    */
   private findSubclasses(baseClassId: string): any[] {
     console.log(`Finding all subclasses of ${this.extractLocalName(baseClassId)}`);
@@ -452,7 +468,7 @@ export class OntologyTreeService {
     return false;
   }
 
-  
+
   private createPropertyGroupTree(properties: any[]): TreeNode[] {
     const tree: TreeNode[] = [];
     const grouped = new Map<string, any[]>();
@@ -500,7 +516,7 @@ export class OntologyTreeService {
     return tree;
   }
 
- 
+
   private extractExpandedNodes(ontology: OntologyJsonLd): any[] {
     if (Array.isArray(ontology)) {
       return ontology;

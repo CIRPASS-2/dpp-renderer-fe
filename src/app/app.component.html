@@ -1,6 +1,8 @@
 <div class="app-layout">
+    @if (isLoggedIn()){
     <app-sidebar />
-    <div class="main-content">
+    }
+    <div class="main-content" [class.no-sidebar]="!isLoggedIn()">
         <router-outlet />
     </div>
 </div>

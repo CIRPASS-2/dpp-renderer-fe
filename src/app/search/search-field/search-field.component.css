@@ -1,0 +1,17 @@
+.search-field-wrapper {
+  display: flex;
+  gap: 0.0rem;
+  align-items: center;
+  width: 100%;
+}
+
+.search-field-op {
+  width: 7rem;
+  flex-shrink: 0;
+}
+
+.search-field-input {
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+}
