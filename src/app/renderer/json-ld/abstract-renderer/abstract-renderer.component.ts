@@ -1,6 +1,7 @@
 import { Component, Input, OnChanges } from '@angular/core';
 import { DividerModule } from 'primeng/divider';
 import { FieldsetModule } from 'primeng/fieldset';
+import { CLASS_RENDER_REGISTRY } from '../../../common/cirpass-dpp-ontology';
 import {
   JsonLdNode,
   JsonLdPropertyValue,
@@ -37,7 +38,7 @@ export class AbstractRendererComponent implements OnChanges {
 
   private _fields: FieldRow[] = [];
 
-  constructor(private registry: OntologyRegistryService) {}
+  constructor(private registry: OntologyRegistryService) { }
 
   ngOnChanges(): void {
     this._fields = this.buildFields();
@@ -114,5 +115,10 @@ export class AbstractRendererComponent implements OnChanges {
     }
 
     return rows;
+  }
+
+  isInRegistry(type: string): boolean {
+    const clazz = CLASS_RENDER_REGISTRY[type]
+    return clazz !== null && clazz !== undefined
   }
 }

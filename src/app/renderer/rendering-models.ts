@@ -12,7 +12,7 @@ export type JsonObject = { [key: string]: JsonValue };
 
 export interface JsonLdValue {
   '@value': string | number | boolean;
-  '@type'?: string;   
+  '@type'?: string;
   '@language'?: string;
 }
 

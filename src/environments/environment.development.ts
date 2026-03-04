@@ -1,7 +1,7 @@
 export const environment = {
-    backendUrl: 'http://localhost:8081',
-    capabilitiesUrl: 'http://localhost:8082',
-    oidcIssuer: 'http://localhost:8180/realms/dpp',
+    backendUrl: 'http://localhost:8085',
+    capabilitiesUrl: 'http://localhost:8084',
+    oidcIssuer: 'http://localhost:8180/realms/cirpass-2',
     oidcClientId: 'web-portal-fe',
-    oidcHttps: false,
+    oidcHttps: false
 };

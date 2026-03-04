@@ -3,12 +3,13 @@ import { environment } from '../environments/environment';
 
 export const authConfig: AuthConfig = {
     issuer: environment.oidcIssuer,
-    redirectUri: window.location.origin + '/search',
+    redirectUri: window.location.origin + '/callback',
     clientId: environment.oidcClientId,
     requireHttps: false,
     responseType: 'code',
     scope: 'openid profile email',
     useSilentRefresh: false,
     showDebugInformation: true,
-    strictDiscoveryDocumentValidation: false
+    strictDiscoveryDocumentValidation: false,
+    clearHashAfterLogin: false,
 };

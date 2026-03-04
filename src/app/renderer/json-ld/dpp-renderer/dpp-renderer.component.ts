@@ -47,7 +47,7 @@ export class DppRendererComponent implements OnChanges {
   error?: string;
   loading = true;
 
-  constructor(private registry: OntologyRegistryService) {}
+  constructor(private registry: OntologyRegistryService) { }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['expandedJsonLd']) {
@@ -93,8 +93,8 @@ export class DppRendererComponent implements OnChanges {
   }
 
   private sortPriority(r: ResolvedNode): number {
-    if (r.category === 'dpp') return 0;
-    if (r.category === 'product') return 1;
+    if (r.category === 'product') return 0;
+    if (r.category === 'dpp') return 1;
     return 2;
   }
 }

@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { OAuthService } from 'angular-oauth2-oidc';
+import { BehaviorSubject } from 'rxjs';
 import { authConfig } from '../auth.config';
 
 @Injectable({
@@ -7,11 +8,18 @@ import { authConfig } from '../auth.config';
 })
 export class AuthService {
 
+  private initialized$ = new BehaviorSubject<boolean>(false);
+
   constructor(private oauthService: OAuthService) { }
 
   async initialize(): Promise<void> {
     this.oauthService.configure(authConfig);
     await this.oauthService.loadDiscoveryDocumentAndTryLogin();
+    this.initialized$.next(true);
+  }
+
+  waitForInit() {
+    return this.initialized$.asObservable();
   }
 
   login(): void {
