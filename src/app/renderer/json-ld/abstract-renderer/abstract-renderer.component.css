@@ -6,3 +6,26 @@
 .abstract-literal  { color: #212529; }
 .abstract-iri      { color: #6366f1; word-break: break-all; font-size: 0.8rem; }
 .abstract-nested   { margin-left: 0.5rem; margin-top: 0.25rem; }
+
+/* Badge for nodes rendered elsewhere by a dedicated top-level component */
+.abstract-ref-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.15rem 0.5rem;
+  background: #f0f4ff;
+  border: 1px solid #c7d2fe;
+  border-radius: 12px;
+  font-size: 0.78rem;
+}
+.abstract-ref-type {
+  font-weight: 600;
+  color: #4338ca;
+}
+.abstract-ref-link {
+  color: #6366f1;
+  text-decoration: none;
+  font-size: 0.75rem;
+  opacity: 0.8;
+}
+.abstract-ref-link:hover { opacity: 1; }

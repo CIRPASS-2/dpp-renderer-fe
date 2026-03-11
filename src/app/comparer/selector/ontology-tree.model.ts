@@ -43,13 +43,13 @@ export interface PropertyData {
 
     /**
      * Full RDF URI of the property (= @id of the ontology node).
-     * E.g. "http://dpp.taltech.ee/EUDPP#productName"
+     * E.g. "https://w3id.org/eudpp#productName"
      */
     uri?: string;
 
     /**
      * Vocab namespace: everything up to and including the last # or / in the URI.
-     * E.g. "http://dpp.taltech.ee/EUDPP#"
+     * E.g. "https://w3id.org/eudpp#"
      * Maps directly to OntologyPath.namespace in the ExtractionRequest sent to the BE.
      */
     namespace?: string;
@@ -91,8 +91,8 @@ export interface PropertyPathsMap {
 /**
  * Splits a full RDF URI into namespace (with trailing # or /) and localName.
  *
- * "http://dpp.taltech.ee/EUDPP#productName"
- *   → { namespace: "http://dpp.taltech.ee/EUDPP#", localName: "productName" }
+ * "https://w3id.org/eudpp#productName"
+ *   → { namespace: "https://w3id.org/eudpp#", localName: "productName" }
  *
  * "https://example.org/textile/fabricName"
  *   → { namespace: "https://example.org/textile/", localName: "fabricName" }

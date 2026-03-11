@@ -18,8 +18,9 @@ interface FieldRow {
 }
 
 interface FieldValue {
-  kind: 'literal' | 'node' | 'iri';
+  kind: 'literal' | 'node' | 'iri' | 'ref';
   text: string;
+  refLabel?: string;
   node?: JsonLdNode;
 }
 
@@ -33,7 +34,6 @@ export class AbstractRendererComponent implements OnChanges {
   @Input({ required: true }) node!: JsonLdNode;
   @Input() graph: Map<string, JsonLdNode> = new Map();
   @Input() skipUris: string[] = [];
-  /** Tracks already-rendered @id values to prevent circular recursion */
   @Input() visited: Set<string> = new Set();
 
   private _fields: FieldRow[] = [];
@@ -72,7 +72,6 @@ export class AbstractRendererComponent implements OnChanges {
     const skip = new Set(this.skipUris);
     const selfId = this.node['@id'] as string | undefined;
 
-    // Mark current node as visited for child resolution
     const currentVisited = new Set(this.visited);
     if (selfId) currentVisited.add(selfId);
 
@@ -91,12 +90,26 @@ export class AbstractRendererComponent implements OnChanges {
         if (isJsonLdNode(item)) {
           const id = item['@id'] as string | undefined;
 
-          // ← stop recursion: if already visited render as IRI link only
           if (id && currentVisited.has(id)) {
             return { kind: 'iri', text: id };
           }
 
           const resolved = (id ? this.graph.get(id) : undefined) ?? item;
+          const types = (resolved['@type'] as string[]) ?? [];
+
+          // If this node's type has a dedicated top-level renderer (non-abstract
+          // RenderCategory), don't expand as it is rendered
+          // separately by DppRendererComponent. Show a typed reference badge instead.
+          if (types.length > 0) {
+            const category = this.registry.resolveCategory(types);
+            if (category !== 'abstract') {
+              return {
+                kind: 'ref',
+                text: id ?? '',
+                refLabel: this.registry.getLabel(types[0]),
+              };
+            }
+          }
 
           if (isIriOnlyRef(resolved)) {
             return { kind: 'iri', text: id ?? '', node: resolved };
@@ -118,7 +131,15 @@ export class AbstractRendererComponent implements OnChanges {
   }
 
   isInRegistry(type: string): boolean {
-    const clazz = CLASS_RENDER_REGISTRY[type]
-    return clazz !== null && clazz !== undefined
+    const clazz = CLASS_RENDER_REGISTRY[type];
+    return clazz !== null && clazz !== undefined;
+  }
+  skip(frow: FieldRow): boolean {
+    if (frow?.values?.length === 0) {
+      return true
+    } else if (frow?.values?.filter(r => r.kind !== 'ref').length == 0) {
+      return true;
+    }
+    return false;
   }
 }

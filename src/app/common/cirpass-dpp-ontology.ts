@@ -3,7 +3,7 @@
  *
  */
 
-export const EUDPP_NS = 'http://dpp.taltech.ee/EUDPP#';
+export const EUDPP_NS = 'https://w3id.org/eudpp#';
 export const EUDPP_LCA_NS = 'http://dpp.cea.fr/EUDPP/LCA#';
 
 const NS = EUDPP_NS;
