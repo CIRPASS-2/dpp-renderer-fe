@@ -3,6 +3,7 @@ import { environment } from '../environments/environment';
 
 export const authConfig: AuthConfig = {
     issuer: environment.oidcIssuer,
+    clockSkewInSec: 0,
     redirectUri: window.location.origin + '/callback',
     clientId: environment.oidcClientId,
     requireHttps: false,

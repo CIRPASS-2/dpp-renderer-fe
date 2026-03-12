@@ -7,10 +7,11 @@ import { CapabilitiesService } from '../capabilities.service';
 import { SearchFiltersComponent } from '../search-filters/search-filters.component';
 import { SearchField, SearchFilter, SearchRequest, SearchResult } from '../search-models';
 import { SearchService } from '../search.service';
+import { TagModule } from 'primeng/tag';
 
 @Component({
   selector: 'app-search-results',
-  imports: [LabelPipe, TableModule, ButtonModule, SearchFiltersComponent],
+  imports: [LabelPipe, TableModule, ButtonModule, TagModule, SearchFiltersComponent],
   templateUrl: './search-results.component.html',
   styleUrl: './search-results.component.css'
 })

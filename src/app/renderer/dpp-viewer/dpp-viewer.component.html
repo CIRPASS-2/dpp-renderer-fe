@@ -1,19 +1,23 @@
 @if(!showScanner) {
 <div class="dpp-viewer-container">
+    <h3 class="title">
+        <i class="pi pi-link"></i>
+        DPP Viewer
+    </h3>
     <div class="actions">
         <p-button label="Scan code" icon="pi pi-qrcode" [outlined]="true" (onClick)="openScanner()"
             severity="secondary" />
 
         <p-button label="Fetch DPP" icon="pi pi-check" (onClick)="fetch()" [disabled]="!hasUrl()" severity="success" />
     </div>
-
     <div class="url-input-row">
         <span class="p-input-icon-left input-wrapper">
-            <i class="pi pi-globe"></i>
+            <i class="pi pi-globe"> Live URL</i>
             <input type="text" pInputText [(ngModel)]="url" placeholder="https://example.com/dpp-instance"
                 class="w-full" [pTooltip]="url || 'Enter a URL'" tooltipPosition="top" />
         </span>
     </div>
+    <p-divider></p-divider>
     @if (fetchResult){
     @if(fetchResult.kind==='jsonld'){
     <app-dpp-renderer [expandedJsonLd]="asJsonLd"></app-dpp-renderer>

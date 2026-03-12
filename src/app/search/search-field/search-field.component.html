@@ -1,8 +1,8 @@
 @let field=renderableField();
 <div [formGroup]="form" class="search-field-wrapper">
     @if (field?.fieldType==='STRING' || field?.fieldType==='DECIMAL' || field?.fieldType==='INTEGER'){
-    <p-select formControlName="op" [options]="field?.availableOps ?? []" placeholder="Op." styleClass="search-field-op"
-        (onBlur)="onBlur()" />
+    <p-select formControlName="op" [appendTo]="'body'" [options]="field?.availableOps ?? []" placeholder="Op."
+        styleClass="search-field-op" (onBlur)="onBlur()" />
     }
     @if (field?.fieldType==='DECIMAL'){
     <p-inputnumber formControlName="literal" placeholder="Insert number" [id]="id" (blur)="onBlur()" mode="decimal"

@@ -25,12 +25,20 @@ export class DppComparisonService {
     return { columns, rows };
   }
 
- 
+
   private extractColumns(results: any[]): DppColumn[] {
     return results.map((dpp, index) => ({
-      dppId: dpp['id'] || dpp['@id'] || `DPP-${index + 1}`,
-      dppLabel: dpp['name'] || dpp['label'] || dpp['productName'] || `DPP ${index + 1}`
+      dppId: this.findProp(dpp, ['id', '@id']) ?? `DPP-${index + 1}`,
+      dppLabel: this.findProp(dpp, ['name', 'label', 'productName']) ?? `DPP ${index + 1}`
     }));
+  }
+
+  private findProp(obj: any, keys: string[]): any {
+    if (!obj || typeof obj !== 'object') return undefined;
+    const normalize = (s: string) => s.toLowerCase().replace(/[_\-\s]/g, '');
+    const normalizedKeys = keys.map(normalize);
+    const match = Object.keys(obj).find(k => normalizedKeys.includes(normalize(k)));
+    return match !== undefined ? obj[match] : undefined;
   }
 
 
@@ -43,7 +51,7 @@ export class DppComparisonService {
     );
   }
 
-  
+
   private buildComparisonRows(
     propertyKeys: Set<string>,
     results: Map<string, any>[],
@@ -140,7 +148,7 @@ export class DppComparisonService {
     return rows;
   }
 
-  
+
   private createPropertyValue(rawValue: any): PropertyValue {
     const isMissing = rawValue === null || rawValue === undefined;
 
@@ -152,7 +160,7 @@ export class DppComparisonService {
     };
   }
 
-  
+
   private formatDisplayValue(value: any, isMissing: boolean): string {
     if (isMissing) {
       return '—';

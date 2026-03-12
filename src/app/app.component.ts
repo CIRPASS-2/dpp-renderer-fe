@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Router, RouterOutlet } from '@angular/router';
 import { AuthService } from './common/auth.service';
 import { SidebarComponent } from './sidebar/sidebar.component';
 
@@ -10,13 +10,14 @@ import { SidebarComponent } from './sidebar/sidebar.component';
   styleUrl: './app.component.css'
 })
 export class AppComponent implements OnInit {
-  constructor(private authService: AuthService) { }
+  constructor(private authService: AuthService, private router: Router) { }
 
   async ngOnInit(): Promise<void> {
     await this.authService.initialize();
   }
 
-  isLoggedIn():boolean{
-    return this.authService.isLoggedIn
+  isLoggedIn(): boolean {
+    const loggedIn = this.authService.isLoggedIn
+    return loggedIn
   }
 }

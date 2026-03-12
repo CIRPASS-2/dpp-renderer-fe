@@ -3,6 +3,20 @@
     <p-table stripedRows styleClass="p-datatable-striped pt-3" [value]="elements" [paginator]="true"
         (onPage)="pageChange($event)" [rows]="10" [lazy]="true" [totalRecords]="totalElements"
         [tableStyle]="{'min-width': '50rem'}" dataKey="id">
+        <ng-template #caption>
+            <div class="table-caption">
+                <div class="caption-left">
+                    <span class="caption-icon">
+                        <i class="pi pi-id-card"></i>
+                    </span>
+                    <div class="caption-text">
+                        <span class="caption-title">DPP Search Results</span>
+                        <span class="caption-subtitle">Registered Model Level DPPs</span>
+                    </div>
+                </div>
+                <p-tag [value]="totalElements + ' records'" severity="secondary" styleClass="caption-badge" />
+            </div>
+        </ng-template>
         <ng-template pTemplate="header" let-e>
             <tr>
                 @for (key of dataKeys; track i; let i = $index){

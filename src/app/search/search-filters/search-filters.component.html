@@ -1,6 +1,6 @@
 <p-accordion value="0" expandIcon="pi pi-filter-fill" collapseIcon="pi pi-filter-fill">
     <p-accordion-panel value="0">
-        <p-accordion-header>Search params</p-accordion-header>
+        <p-accordion-header>Search filters</p-accordion-header>
         <p-accordion-content>
             @if(filterForm){
             <form [formGroup]="filterForm" (ngSubmit)="onSubmit()" class="filter-form">

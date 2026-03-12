@@ -5,15 +5,15 @@
   @for (entry of entries; track entry.key) {
 
   <div class="pjr-field">
-    <span class="pjr-label">{{ entry.key | label }}</span>
-
     @switch (entry.kind) {
 
     @case ('primitive') {
+    <span class="pjr-label">{{ entry.key | label }}</span>
     <span class="pjr-value">{{ entry.primitiveValue }}</span>
     }
 
     @case ('array-of-primitives') {
+    <span class="pjr-label">{{ entry.key | label }}</span>
     @if (entry.primitiveItems!.length === 0) {
     <span class="pjr-value pjr-empty">[ ]</span>
     } @else {

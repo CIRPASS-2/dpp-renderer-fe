@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
+import { DividerModule } from 'primeng/divider';
 import { InputTextModule } from 'primeng/inputtext';
 import { TooltipModule } from 'primeng/tooltip';
 import { DppFetchResult, DppFetchService, DppJsonLdResult, DppJsonResult } from '../../common/dpp-fetch.service';
@@ -12,7 +13,7 @@ import { ExpandedJsonLd, JsonObject } from '../rendering-models';
 
 @Component({
   selector: 'app-dpp-viewer',
-  imports: [FormsModule, InputTextModule, TooltipModule, ButtonModule, PlainJsonRendererComponent, DppRendererComponent, ScannerComponent],
+  imports: [FormsModule, InputTextModule, DividerModule, TooltipModule, ButtonModule, PlainJsonRendererComponent, DppRendererComponent, ScannerComponent],
   templateUrl: './dpp-viewer.component.html',
   styleUrl: './dpp-viewer.component.css'
 })
