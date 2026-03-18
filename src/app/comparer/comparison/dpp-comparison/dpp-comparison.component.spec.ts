@@ -34,8 +34,6 @@ function makeRow(overrides: Partial<ComparisonRow> = {}): ComparisonRow {
   };
 }
 
-// ─── Mocks ────────────────────────────────────────────────────────────────────
-
 const mockColumns: DppColumn[] = [makeColumn('dpp-1', 'Product A'), makeColumn('dpp-2', 'Product B')];
 
 const mockRows: ComparisonRow[] = [
