@@ -1,0 +1,11 @@
+name: 'DPP Renderer FE Test'
+
+on:
+  pull_request:
+    branches: ['*']
+
+jobs:
+  node-test:
+    uses: CIRPASS-2/actions/.github/workflows/node-test.yml@main
+    with:
+      node_version: '22.15'

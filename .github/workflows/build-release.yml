@@ -1,0 +1,18 @@
+name: 'DPP Renderer FE Build Release'
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  build-release:
+    uses: CIRPASS-2/actions/.github/workflows/node-build-release.yml@main
+    with:
+      node_version: '22.15'
+      output_path: './dist'
+      zipped_paths: './dist'
+      image_name: '${{ github.repository }}'
+      image_tag: '${{ github.ref_name }}'
+      image_registry: 'ghcr.io'
+      dockerfile_path: './Dockerfile'
