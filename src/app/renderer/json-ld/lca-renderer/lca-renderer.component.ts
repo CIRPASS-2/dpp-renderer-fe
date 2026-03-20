@@ -1,13 +1,29 @@
+/*
+ * Copyright 2024-2027 CIRPASS-2
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 import { Component, Input, OnChanges } from '@angular/core';
-import { EUDPP_LCA_NS, EUDPP_NS } from '../../../common/cirpass-dpp-ontology';
-import { JsonLdNode, extractNumber, JsonLdPropertyValue, isJsonLdNode } from '../../rendering-models';
-import { OntologyRegistryService } from '../ontology-registry.service';
 import { CardModule } from 'primeng/card';
 import { DividerModule } from 'primeng/divider';
 import { TooltipModule } from 'primeng/tooltip';
+import { EUDPP_LCA_NS, EUDPP_NS } from '../../../common/cirpass-dpp-ontology';
+import { JsonLdNode, JsonLdPropertyValue, extractNumber, isJsonLdNode } from '../../rendering-models';
+import { OntologyRegistryService } from '../ontology-registry.service';
 
 const LCA = EUDPP_LCA_NS;
-const NS  = EUDPP_NS;
+const NS = EUDPP_NS;
 
 interface ImpactEntry {
   categoryLabel: string;
@@ -17,9 +33,13 @@ interface ImpactEntry {
   method: string | null;
 }
 
+/**
+ * Component for rendering Life Cycle Assessment (LCA) data and environmental impact indicators.
+ * Processes complex LCA graph structures to display impact categories, indicators, values, and methodologies.
+ */
 @Component({
   selector: 'app-lca-renderer',
-  imports: [CardModule,DividerModule,TooltipModule],
+  imports: [CardModule, DividerModule, TooltipModule],
   templateUrl: './lca-renderer.component.html',
   styleUrl: './lca-renderer.component.css'
 })
@@ -31,7 +51,7 @@ export class LcaRendererComponent implements OnChanges {
   footprintLabel = 'Environmental Footprint (LCA)';
   methodologyName: string | null = null;
 
-  constructor(private registry: OntologyRegistryService) {}
+  constructor(private registry: OntologyRegistryService) { }
 
   ngOnChanges(): void {
     this.resolveFootprintLabel();
@@ -81,7 +101,7 @@ export class LcaRendererComponent implements OnChanges {
   }
 
   private extractEntry(node: JsonLdNode): ImpactEntry | null {
-    const types  = (node['@type'] as string[]) ?? [];
+    const types = (node['@type'] as string[]) ?? [];
     const catLabel = types.length > 0 ? this.registry.getLabel(types[0]) : 'Impact';
 
     // category label from Impact_Category
@@ -103,7 +123,7 @@ export class LcaRendererComponent implements OnChanges {
       }
     } else {
       value = extractNumber(node, `${NS}numericalValue`) ??
-              extractNumber(node, `${NS}value`) ?? null;
+        extractNumber(node, `${NS}value`) ?? null;
     }
 
     const methodNodes = this.collectLinked(node, [`${LCA}CF_calculated_by_CM`, `${LCA}CM_used_in_method`]);
@@ -155,6 +175,12 @@ export class LcaRendererComponent implements OnChanges {
     this.methodologyName = methNodes.length > 0 ? this.labelFromNode(methNodes[0]) : null;
   }
 
+  /**
+   * Formats numerical values for display with appropriate precision and notation.
+   * Uses scientific notation for very small or very large numbers.
+   * @param value The numerical or string value to format
+   * @returns Formatted string representation
+   */
   formatValue(value: number | string): string {
     if (typeof value === 'number') {
       // Format as scientific notation for very small/large numbers

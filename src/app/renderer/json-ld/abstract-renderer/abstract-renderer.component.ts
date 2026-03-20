@@ -1,3 +1,19 @@
+/*
+ * Copyright 2024-2027 CIRPASS-2
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 import { Component, Input, OnChanges } from '@angular/core';
 import { DividerModule } from 'primeng/divider';
 import { FieldsetModule } from 'primeng/fieldset';
@@ -24,6 +40,10 @@ interface FieldValue {
   node?: JsonLdNode;
 }
 
+/**
+ * Generic component for rendering JSON-LD nodes without specialized renderers.
+ * Displays all properties in a structured format with cycle detection and reference handling.
+ */
 @Component({
   selector: 'app-abstract-renderer',
   imports: [DividerModule, FieldsetModule],
@@ -44,6 +64,10 @@ export class AbstractRendererComponent implements OnChanges {
     this._fields = this.buildFields();
   }
 
+  /**
+   * Gets the legend/title for the property group.
+   * @returns Human-readable label based on node type or ID
+   */
   get legend(): string {
     const types = (this.node['@type'] as string[]) ?? [];
     return types.length > 0
@@ -51,14 +75,28 @@ export class AbstractRendererComponent implements OnChanges {
       : (this.node['@id'] as string | undefined)?.split('/').pop() ?? 'Properties';
   }
 
+  /**
+   * Gets the field rows for rendering.
+   * @returns Array of field rows containing property labels and values
+   */
   get fields(): FieldRow[] {
     return this._fields;
   }
 
+  /**
+   * Checks if a node is an IRI-only reference.
+   * @param node The JSON-LD node to check
+   * @returns True if node contains only IRI without data
+   */
   isIriOnly(node: JsonLdNode): boolean {
     return isIriOnlyRef(node);
   }
 
+  /**
+   * Creates a visited set for child rendering to prevent cycles.
+   * @param node The child node being rendered
+   * @returns Updated visited set including current and child node IDs
+   */
   childVisited(node: JsonLdNode): Set<string> {
     const next = new Set(this.visited);
     const selfId = this.node['@id'] as string | undefined;
@@ -130,10 +168,20 @@ export class AbstractRendererComponent implements OnChanges {
     return rows;
   }
 
+  /**
+   * Checks if a type has a dedicated renderer in the registry.
+   * @param type The RDF type URI to check
+   * @returns True if type has a registered renderer
+   */
   isInRegistry(type: string): boolean {
     const clazz = CLASS_RENDER_REGISTRY[type];
     return clazz !== null && clazz !== undefined;
   }
+  /**
+   * Determines if a field row should be skipped from rendering.
+   * @param frow The field row to check
+   * @returns True if row has no values or only reference values
+   */
   skip(frow: FieldRow): boolean {
     if (frow?.values?.length === 0) {
       return true

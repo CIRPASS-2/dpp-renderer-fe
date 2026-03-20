@@ -1,41 +1,57 @@
+<!--
+  Copyright 2024-2027 CIRPASS-2
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
 @if (isIriOnly) {
-      <div class="facility-iri-badge" [title]="node['@id']">
-        <span>🏭</span>
-        <span class="facility-label">External Facility</span>
-        <a [href]="node['@id']" target="_blank" rel="noopener" class="facility-iri-link">
-          {{ shortIri }}
-        </a>
+<div class="facility-iri-badge" [title]="node['@id']">
+  <span>🏭</span>
+  <span class="facility-label">External Facility</span>
+  <a [href]="node['@id']" target="_blank" rel="noopener" class="facility-iri-link">
+    {{ shortIri }}
+  </a>
+</div>
+} @else {
+<p-card styleClass="facility-card">
+  <ng-template pTemplate="title">
+    <div class="facility-title-row">
+      <span>🏭</span>
+      <span>{{ displayId ?? 'Facility' }}</span>
+    </div>
+  </ng-template>
+  <ng-template pTemplate="content">
+    <div class="facility-fields">
+      @if (displayId) {
+      <div class="field-item">
+        <span class="field-label">Facility ID</span>
+        <code class="field-value">{{ displayId }}</code>
       </div>
-    } @else {
-      <p-card styleClass="facility-card">
-        <ng-template pTemplate="title">
-          <div class="facility-title-row">
-            <span>🏭</span>
-            <span>{{ displayId ?? 'Facility' }}</span>
-          </div>
-        </ng-template>
-        <ng-template pTemplate="content">
-          <div class="facility-fields">
-            @if (displayId) {
-              <div class="field-item">
-                <span class="field-label">Facility ID</span>
-                <code class="field-value">{{ displayId }}</code>
-              </div>
-            }
-            @if (actors.length > 0) {
-              <div class="field-item">
-                <span class="field-label">Used By</span>
-                @for (a of actors; track a) {
-                  <span class="field-value">{{ a }}</span>
-                }
-              </div>
-            }
-          </div>
-          @if (node['@id']) {
-            <a [href]="node['@id']" target="_blank" rel="noopener" class="facility-iri-footer">
-              {{ node['@id'] }}
-            </a>
-          }
-        </ng-template>
-      </p-card>
+      }
+      @if (actors.length > 0) {
+      <div class="field-item">
+        <span class="field-label">Used By</span>
+        @for (a of actors; track a) {
+        <span class="field-value">{{ a }}</span>
+        }
+      </div>
+      }
+    </div>
+    @if (node['@id']) {
+    <a [href]="node['@id']" target="_blank" rel="noopener" class="facility-iri-footer">
+      {{ node['@id'] }}
+    </a>
     }
+  </ng-template>
+</p-card>
+}

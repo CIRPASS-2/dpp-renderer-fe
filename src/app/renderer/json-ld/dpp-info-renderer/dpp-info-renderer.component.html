@@ -1,31 +1,47 @@
-<p-card header="Digital Product Passport" styleClass="dpp-card">
-      <div class="dpp-grid">
-        @if (dppId) {
-          <div class="field-item full-width">
-            <span class="field-label">{{ nsUniqueId | label }}</span>
-            <code class="dpp-id">{{ dppId }}</code>
-          </div>
-        }
-        @if (status) {
-          <div class="field-item">
-            <span class="field-label">Status</span>
-            <p-tag [value]="status" [severity]="statusSeverity" />
-          </div>
-        }
-        @for (field of metaFields; track field.uri) {
-          <div class="field-item">
-            <span class="field-label">{{ field.uri | label }}</span>
-            @if (isLink(field.value)) {
-              <a [href]="field.value" target="_blank" rel="noopener" class="field-link">{{ field.value }}</a>
-            } @else {
-              <span class="field-value">{{ field.value }}</span>
-            }
-          </div>
-        }
-      </div>
+<!--
+  Copyright 2024-2027 CIRPASS-2
 
-      @if (extraUris.length > 0) {
-        <p-divider />
-        <app-abstract-renderer [node]="node" [graph]="graph" [skipUris]="knownUris" />
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+<p-card header="Digital Product Passport" styleClass="dpp-card">
+  <div class="dpp-grid">
+    @if (dppId) {
+    <div class="field-item full-width">
+      <span class="field-label">{{ nsUniqueId | label }}</span>
+      <code class="dpp-id">{{ dppId }}</code>
+    </div>
+    }
+    @if (status) {
+    <div class="field-item">
+      <span class="field-label">Status</span>
+      <p-tag [value]="status" [severity]="statusSeverity" />
+    </div>
+    }
+    @for (field of metaFields; track field.uri) {
+    <div class="field-item">
+      <span class="field-label">{{ field.uri | label }}</span>
+      @if (isLink(field.value)) {
+      <a [href]="field.value" target="_blank" rel="noopener" class="field-link">{{ field.value }}</a>
+      } @else {
+      <span class="field-value">{{ field.value }}</span>
       }
-    </p-card>
+    </div>
+    }
+  </div>
+
+  @if (extraUris.length > 0) {
+  <p-divider />
+  <app-abstract-renderer [node]="node" [graph]="graph" [skipUris]="knownUris" />
+  }
+</p-card>

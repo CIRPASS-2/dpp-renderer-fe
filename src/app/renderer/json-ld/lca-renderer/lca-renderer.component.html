@@ -1,51 +1,67 @@
+<!--
+  Copyright 2024-2027 CIRPASS-2
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
 <p-card styleClass="lca-card">
-      <ng-template pTemplate="title">
-        <div class="lca-title-row">
-          <span>🌿</span>
-          <span>{{ footprintLabel }}</span>
+  <ng-template pTemplate="title">
+    <div class="lca-title-row">
+      <span>🌿</span>
+      <span>{{ footprintLabel }}</span>
+    </div>
+  </ng-template>
+
+  <ng-template pTemplate="content">
+    @if (impacts.length === 0) {
+    <span class="lca-empty">No impact data available</span>
+    } @else {
+    <div class="lca-grid">
+      @for (entry of impacts; track $index) {
+      <div class="lca-impact-card">
+        <div class="lca-cat-label">{{ entry.categoryLabel }}</div>
+        <div class="lca-indicator">{{ entry.indicatorLabel }}</div>
+        <div class="lca-value-row">
+          @if (entry.value !== null) {
+          <span class="lca-value">{{ formatValue(entry.value) }}</span>
+          @if (entry.unit) {
+          <span class="lca-unit">{{ entry.unit }}</span>
+          }
+          } @else {
+          <span class="lca-no-value">—</span>
+          }
         </div>
-      </ng-template>
-
-      <ng-template pTemplate="content">
-        @if (impacts.length === 0) {
-          <span class="lca-empty">No impact data available</span>
-        } @else {
-          <div class="lca-grid">
-            @for (entry of impacts; track $index) {
-              <div class="lca-impact-card">
-                <div class="lca-cat-label">{{ entry.categoryLabel }}</div>
-                <div class="lca-indicator">{{ entry.indicatorLabel }}</div>
-                <div class="lca-value-row">
-                  @if (entry.value !== null) {
-                    <span class="lca-value">{{ formatValue(entry.value) }}</span>
-                    @if (entry.unit) {
-                      <span class="lca-unit">{{ entry.unit }}</span>
-                    }
-                  } @else {
-                    <span class="lca-no-value">—</span>
-                  }
-                </div>
-                @if (entry.method) {
-                  <div class="lca-method" [pTooltip]="entry.method" tooltipPosition="top">
-                    {{ entry.method }}
-                  </div>
-                }
-              </div>
-            }
-          </div>
+        @if (entry.method) {
+        <div class="lca-method" [pTooltip]="entry.method" tooltipPosition="top">
+          {{ entry.method }}
+        </div>
         }
+      </div>
+      }
+    </div>
+    }
 
-        @if (methodologyName) {
-          <p-divider />
-          <div class="lca-methodology">
-            <span class="lca-method-label">Methodology:</span>
-            <span>{{ methodologyName }}</span>
-          </div>
-        }
+    @if (methodologyName) {
+    <p-divider />
+    <div class="lca-methodology">
+      <span class="lca-method-label">Methodology:</span>
+      <span>{{ methodologyName }}</span>
+    </div>
+    }
 
-        @if (node['@id']) {
-          <p-divider />
-          <a [href]="node['@id']" target="_blank" rel="noopener" class="lca-iri">{{ node['@id'] }}</a>
-        }
-      </ng-template>
-    </p-card>
+    @if (node['@id']) {
+    <p-divider />
+    <a [href]="node['@id']" target="_blank" rel="noopener" class="lca-iri">{{ node['@id'] }}</a>
+    }
+  </ng-template>
+</p-card>

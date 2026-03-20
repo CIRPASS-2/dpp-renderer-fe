@@ -85,6 +85,9 @@
               "zone.js/testing"
             ],
             "tsConfig": "tsconfig.spec.json",
+            "scripts": [
+              "src/assets/env.js"
+            ],
             "assets": [
               {
                 "glob": "**/*",
@@ -94,8 +97,7 @@
             ],
             "styles": [
               "src/styles.css"
-            ],
-            "scripts": []
+            ]
           }
         }
       }
