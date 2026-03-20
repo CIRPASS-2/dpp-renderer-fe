@@ -1,4 +1,4 @@
-# DPP Renderer
+# DPP Renderer Fe
 
 Frontend application for visualizing, searching, and comparing Digital Product Passport (DPP) data with specialized rendering for the CIRPASS-2 ontology.
 
