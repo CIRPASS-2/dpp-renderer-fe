@@ -1,0 +1,60 @@
+/*
+ * Copyright 2024-2027 CIRPASS-2
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.upload-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+  padding: 0.25rem 0;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.field-label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--p-text-color);
+}
+
+.required {
+  color: var(--p-red-500, #ef4444);
+  margin-left: 1px;
+}
+
+.field-error {
+  color: var(--p-red-500, #ef4444);
+  font-size: 0.78rem;
+}
+
+.file-input {
+  font-size: 0.875rem;
+  padding: 0.4rem 0;
+  width: 100%;
+  cursor: pointer;
+}
+
+.upload-error {
+  background: color-mix(in srgb, var(--p-red-500, #ef4444) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--p-red-500, #ef4444) 30%, transparent);
+  border-radius: 6px;
+  padding: 0.6rem 0.85rem;
+  font-size: 0.85rem;
+  color: var(--p-red-700, #b91c1c);
+}

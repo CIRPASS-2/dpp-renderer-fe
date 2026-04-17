@@ -23,6 +23,8 @@ import { ComparerStepperComponent } from './comparer/comparer-stepper/comparer-s
 import { LoginComponent } from './login/login.component';
 import { DppViewerComponent } from './renderer/dpp-viewer/dpp-viewer.component';
 import { SearchResultsComponent } from './search/search-results/search-results.component';
+import { ValidatorResourceViewComponent } from './validator/validator-resource-view/validator-resource-view.component';
+import { ValidatorResourcesTableComponent } from './validator/validator-resources-table/validator-resources-table.component';
 
 export const authGuard: CanActivateFn = () => {
     const authService = inject(AuthService);
@@ -68,6 +70,16 @@ export const routes: Routes = [
     {
         path: 'view',
         component: DppViewerComponent,
+        canActivate: [authGuard]
+    },
+    {
+        path: 'validator/:resType',
+        component: ValidatorResourcesTableComponent,
+        canActivate: [authGuard]
+    },
+    {
+        path: 'validator/:resType/view/:id',
+        component: ValidatorResourceViewComponent,
         canActivate: [authGuard]
     }
 ];

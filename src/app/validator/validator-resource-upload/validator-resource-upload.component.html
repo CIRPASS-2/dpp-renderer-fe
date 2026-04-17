@@ -1,0 +1,91 @@
+<!--
+  Copyright 2024-2027 CIRPASS-2
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+<p-dialog [visible]="visible" (visibleChange)="visibleChange.emit($event)" [modal]="true" [draggable]="false"
+    [resizable]="false" [style]="{ width: '520px' }"
+    [header]="isTemplate ? 'Upload New Template' : 'Upload New JSON Schema'">
+
+    <form [formGroup]="form" class="upload-form" (ngSubmit)="submit()">
+
+        <!-- Name -->
+        <div class="field">
+            <label for="name" class="field-label">Name <span class="required">*</span></label>
+            <input id="name" pInputText formControlName="name" placeholder="e.g. my-schema" class="w-full" />
+            @if (f['name'].touched && f['name'].hasError('required')) {
+            <small class="field-error">Name is required.</small>
+            }
+        </div>
+
+        <!-- Version -->
+        <div class="field">
+            <label for="version" class="field-label">Version <span class="required">*</span></label>
+            <input id="version" pInputText formControlName="version" placeholder="e.g. 1.0.0" class="w-full" />
+            @if (f['version'].touched && f['version'].hasError('required')) {
+            <small class="field-error">Version is required.</small>
+            }
+            @if (f['version'].touched && f['version'].hasError('pattern')) {
+            <small class="field-error">Version must be digits separated by dots (e.g. 1.0.0).</small>
+            }
+        </div>
+
+        <!-- Description -->
+        <div class="field">
+            <label for="description" class="field-label">Description</label>
+            <textarea id="description" pTextarea formControlName="description" rows="2"
+                placeholder="Optional description" class="w-full">
+      </textarea>
+        </div>
+
+        <!-- Context URI (template only) -->
+        @if (isTemplate) {
+        <div class="field">
+            <label for="contextUri" class="field-label">Context URI</label>
+            <input id="contextUri" pInputText formControlName="contextUri"
+                placeholder="https://example.com/context.jsonld" class="w-full" />
+        </div>
+        }
+
+        <!-- Payload Type -->
+        <div class="field">
+            <label for="payloadType" class="field-label">Payload Type <span class="required">*</span></label>
+            <p-select inputId="payloadType" formControlName="payloadType" [options]="payloadTypeOptions"
+                optionLabel="label" optionValue="value" placeholder="Select format" styleClass="w-full" />
+            @if (f['payloadType'].touched && f['payloadType'].hasError('required')) {
+            <small class="field-error">Payload type is required.</small>
+            }
+        </div>
+
+        <!-- File -->
+        <div class="field">
+            <label for="file" class="field-label">File <span class="required">*</span></label>
+            <input id="file" type="file" class="file-input" (change)="onFileChange($event)" />
+            @if (errorMessage && !selectedFile) {
+            <small class="field-error">{{ errorMessage }}</small>
+            }
+        </div>
+
+        @if (errorMessage && selectedFile) {
+        <div class="upload-error">{{ errorMessage }}</div>
+        }
+
+    </form>
+
+    <ng-template pTemplate="footer">
+        <p-button label="Cancel" severity="secondary" [text]="true" (click)="close()" />
+        <p-button label="Upload" icon="pi pi-upload" [loading]="uploading" (click)="submit()" />
+    </ng-template>
+
+</p-dialog>
