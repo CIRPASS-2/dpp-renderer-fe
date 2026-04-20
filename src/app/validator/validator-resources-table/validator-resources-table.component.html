@@ -1,0 +1,121 @@
+<!--
+  Copyright 2024-2027 CIRPASS-2
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+<p-confirmDialog />
+
+<app-validator-resource-upload [(visible)]="showUploadDialog" [isTemplate]="isTemplate"
+    (uploaded)="load(currentSearchParams)" />
+
+<p-accordion expandIcon="pi pi-filter-fill" collapseIcon="pi pi-filter-fill" class="mb-3">
+    <p-accordion-panel value="0">
+        <p-accordion-header>Search filters</p-accordion-header>
+        <p-accordion-content>
+            <form [formGroup]="searchForm" (ngSubmit)="search()" class="search-form">
+                <div class="search-grid">
+                    <div class="search-field">
+                        <label for="s-name">Name</label>
+                        <input id="s-name" pInputText formControlName="name" placeholder="e.g. my-schema"
+                            class="w-full" />
+                    </div>
+                    <div class="search-field">
+                        <label for="s-version">Version</label>
+                        <input id="s-version" pInputText formControlName="version" placeholder="e.g. 1.0.0"
+                            class="w-full" />
+                    </div>
+                    <div class="search-field">
+                        <label for="s-description">Description</label>
+                        <input id="s-description" pInputText formControlName="description" placeholder="keyword"
+                            class="w-full" />
+                    </div>
+                </div>
+                <div class="search-actions">
+                    <p-button type="submit" icon="pi pi-search" label="Search" />
+                    <p-button type="button" icon="pi pi-times" label="Clear" severity="secondary"
+                        (click)="clearSearch()" />
+                </div>
+            </form>
+        </p-accordion-content>
+    </p-accordion-panel>
+</p-accordion>
+
+<p-table stripedRows styleClass="p-datatable-striped pt-3" [value]="resources" [paginator]="true"
+    (onPage)="pageChange($event)" [rows]="pageSize" [totalRecords]="totalRecords" [loading]="loading"
+    [tableStyle]="{ 'min-width': '50rem' }" dataKey="id">
+
+    <ng-template #caption>
+        <div class="table-caption">
+            <div class="caption-left">
+                <span class="caption-icon">
+                    @if (isTemplate) {
+                    <i class="pi pi-sitemap"></i>
+                    } @else {
+                    <i class="pi pi-code"></i>
+                    }
+                </span>
+                <div class="caption-text">
+                    <span class="caption-title">{{ isTemplate ? 'Templates' : 'JSON Schemas' }}</span>
+                    <span class="caption-subtitle">Validation resources</span>
+                </div>
+            </div>
+            <p-tag [value]="totalRecords + ' records'" severity="secondary" styleClass="caption-badge" />
+            <p-button icon="pi pi-plus" label="Upload New" (click)="showUploadDialog = true" />
+        </div>
+    </ng-template>
+
+    <ng-template pTemplate="header">
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Version</th>
+            <th>Description</th>
+            @if (isTemplate) {
+            <th>Context URI</th>
+            }
+            <th>
+                <div class="text-center">Actions</div>
+            </th>
+        </tr>
+    </ng-template>
+
+    <ng-template pTemplate="body" let-resource>
+        <tr>
+            <td>{{ resource.id }}</td>
+            <td>{{ resource.name }}</td>
+            <td>{{ resource.version }}</td>
+            <td>{{ resource.description }}</td>
+            @if (isTemplate) {
+            <td>{{ asTemplate(resource).contextUri }}</td>
+            }
+            <td>
+                <div class="flex gap-1 justify-center">
+                    <p-button icon="pi pi-eye" severity="secondary" [text]="true" [rounded]="true"
+                        (click)="view(resource)" pTooltip="View" tooltipPosition="top" />
+                    <p-button icon="pi pi-trash" severity="danger" [text]="true" [rounded]="true"
+                        (click)="confirmDelete(resource)" pTooltip="Delete" tooltipPosition="top" />
+                </div>
+            </td>
+        </tr>
+    </ng-template>
+
+    <ng-template pTemplate="emptymessage">
+        <tr>
+            <td [attr.colspan]="isTemplate ? 6 : 5" class="text-center p-4">
+                No resources found.
+            </td>
+        </tr>
+    </ng-template>
+
+</p-table>

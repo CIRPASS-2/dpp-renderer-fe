@@ -19,6 +19,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { MenuItem } from 'primeng/api';
 import { PanelMenuModule } from 'primeng/panelmenu';
+import { AuthService } from '../common/auth.service';
 
 /**
  * Sidebar navigation component providing access to main application features.
@@ -35,10 +36,17 @@ export class SidebarComponent implements OnInit {
 
   menuItems: MenuItem[] = [];
 
-  constructor(private router: Router) { }
+  constructor(private router: Router, private authService: AuthService) { }
 
   ngOnInit(): void {
     this.menuItems = [
+      {
+        label: 'Logout',
+        icon: 'pi pi-sign-out',
+        command: () => {
+          this.authService.logout();
+        }
+      },
       {
         label: 'Model Level DPP Search',
         icon: 'pi pi-search',
@@ -61,5 +69,27 @@ export class SidebarComponent implements OnInit {
         }
       }
     ];
+    if (this.authService.hasAnyRole('admin', 'eu')) {
+      this.menuItems.push({
+        label: 'DPP Validation Resources',
+        icon: 'pi pi-verified',
+        items: [
+          {
+            label: 'Templates',
+            icon: 'pi pi-sitemap',
+            command: () => {
+              this.router.navigate(['/validator/templates']);
+            }
+          },
+          {
+            label: 'Schemas',
+            icon: 'pi pi-code',
+            command: () => {
+              this.router.navigate(['/validator/schemas']);
+            }
+          }
+        ]
+      })
+    }
   }
 }

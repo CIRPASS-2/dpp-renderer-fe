@@ -1,0 +1,62 @@
+<!--
+  Copyright 2024-2027 CIRPASS-2
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+<div class="resource-view">
+
+    <!-- Back button -->
+    <div class="back-row">
+        <p-button icon="pi pi-arrow-left" label="Back" severity="secondary" [text]="true" (click)="back()" />
+    </div>
+
+    <!-- Metadata heading -->
+    @if (metadata) {
+    <div class="metadata-card">
+        <div class="metadata-header">
+            <div class="metadata-title-row">
+                <span class="resource-name">{{ metadata.name }}</span>
+                <p-tag [value]="'v' + metadata.version" severity="info" />
+                <p-tag [value]="isTemplate ? 'template' : 'schema'" [severity]="isTemplate ? 'warn' : 'success'" />
+            </div>
+            @if (metadata.description) {
+            <p class="resource-description">{{ metadata.description }}</p>
+            }
+            @if (isTemplate) {
+            <div class="context-uri-row">
+                <span class="meta-label">Context URI:</span>
+                <span class="meta-value">{{ templateMeta.contextUri ? templateMeta.contextUri : 'N/A' }}</span>
+            </div>
+            }
+            <div class="meta-id-row">
+                <span class="meta-label">ID:</span>
+                <span class="meta-value">{{ metadata.id }}</span>
+            </div>
+        </div>
+    </div>
+    }
+
+    <!-- Raw content -->
+    <div class="content-card">
+        @if (loading) {
+        <div class="loading-row">
+            <i class="pi pi-spin pi-spinner"></i>
+            <span>Loading content&hellip;</span>
+        </div>
+        } @else {
+        <pre class="resource-content">{{ content }}</pre>
+        }
+    </div>
+
+</div>
