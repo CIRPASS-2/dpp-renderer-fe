@@ -6,8 +6,7 @@ Main functions are:
 - **DPP visualization**: Renders DPPs in JSON or JSON-LD format with specialized components for CIRPASS-2 ontology entities.  
 - **DPP comparison**: Side-by-side comparison of multiple DPPs with difference highlighting and tabular view.
 - **DPP search**: Advanced search over indexed DPP data with dynamic filtering capabilities.
-- **QR code scanning**: Direct import of DPPs via mobile camera scanning.
-
+- **QR code scanning**: Direct visualization of DPPs via mobile camera scanning.- **DPP Validation Resources**: Upload, browse, and inspect JSON schemas and RDF templates used to validate Digital Product Passports.
 © CIRPASS-2 Consortium, 2024-2027
 
 <img width="832" height="128" alt="image" src="https://raw.githubusercontent.com/CIRPASS-2/assets/main/images/cc-commons.png" />
@@ -30,7 +29,8 @@ This Angular application provides a comprehensive frontend for Digital Product P
 - **Advanced DPP comparison**: Multi-DPP tabular comparison with ontology-based property extraction and difference highlighting.
 - **Dynamic search interface**: Auto-configured search forms based on backend capabilities with filter operators and pagination.
 - **QR code integration**: Mobile-friendly QR scanning for direct DPP import and visualization.
-- **OpenID Connect authentication** with role-based access control.
+- **DPP Validation Resources management**: Role-restricted UI to upload, browse, search, and inspect JSON schemas and RDF templates used for DPP validation.
+- **OpenID Connect authentication** with configurable role-based access control and token claim mapping.
 - **Responsive design** built with Angular 17+ and PrimeNG components.
 
 ### JSON-LD Rendering Architecture
@@ -78,6 +78,7 @@ When the vocabulary is unknown or unsupported, the **[AbstractRendererComponent]
     - [DPP Search](#dpp-search)
     - [DPP Comparison](#dpp-comparison)
     - [QR Code Scanner](#qr-code-scanner)
+    - [DPP Validation Resources](#dpp-validation-resources)
 - [Backend API Integration](#backend-api-integration)
     - [Used Endpoints](#used-endpoints)
     - [Authentication](#authentication)
@@ -143,13 +144,16 @@ The application uses dynamic environment configuration via `assets/env.js`, allo
 
 #### Core Configuration Variables
 
-| Variable          | Description                     | Default                                 |
-|-------------------|---------------------------------|-----------------------------------------|
-| `backendUrl`      | DPP Renderer Backend API URL    | `http://localhost:8085`                 |
-| `capabilitiesUrl` | DPP Data Extractor API URL      | `http://localhost:8084`                 |
-| `oidcIssuer`      | OpenID Connect issuer URL       | `http://localhost:8180/realms/cirpass-2`|
-| `oidcClientId`    | OIDC client identifier          | `web-portal-fe`                         |
-| `oidcHttps`       | Force HTTPS for OIDC            | `true`                                  |
+| Variable          | Description                                                        | Default                                              |
+|-------------------|--------------------------------------------------------------------|------------------------------------------------------|
+| `backendUrl`      | DPP Renderer Backend API URL                                       | `http://localhost:8085`                              |
+| `capabilitiesUrl` | DPP Data Extractor API URL                                         | `http://localhost:8084`                              |
+| `validatorUrl`    | DPP Validation Resources Backend API URL                           | `http://localhost:8083`                              |
+| `oidcIssuer`      | OpenID Connect issuer URL                                          | `http://localhost:8180/realms/cirpass-2`             |
+| `oidcClientId`    | OIDC client identifier                                             | `web-portal-fe`                                      |
+| `oidcHttps`       | Force HTTPS for OIDC                                               | `true`                                               |
+| `rolesClaimName`  | Dot-separated path to the roles array in the JWT access token      | `roles`                                              |
+| `rolesMappings`   | Comma-separated `externalRole:INTERNAL_ROLE` mapping pairs         | `admin:ADMIN,eo:EO,eu:EU`                            |
 
 #### Environment Files
 
@@ -159,9 +163,12 @@ The application uses dynamic environment configuration via `assets/env.js`, allo
   window['env'] = window['env'] || {};
   window['env']['backendUrl'] = 'http://localhost:8085';
   window['env']['capabilitiesUrl'] = 'http://localhost:8084';
+  window['env']['validatorUrl'] = 'http://localhost:8083';
   window['env']['oidcIssuer'] = 'http://localhost:8180/realms/cirpass-2';
   window['env']['oidcClientId'] = 'web-portal-fe';
   window['env']['oidcHttps'] = false;
+  window['env']['rolesClaimName'] = 'roles';
+  window['env']['rolesMappings'] = 'admin:ADMIN,eo:EO,eu:EU';
 })(this);
 ```
 
@@ -172,9 +179,12 @@ The application uses dynamic environment configuration via `assets/env.js`, allo
   window['env']['production'] = `${PRODUCTION}`;
   window['env']['backendUrl'] = '${BACKEND_URL}';
   window['env']['capabilitiesUrl'] = '${CAPABILITIES_URL}';
+  window['env']['validatorUrl'] = '${VALIDATOR_URL}';
   window['env']['oidcIssuer'] = '${OIDC_ISSUER}';
   window['env']['oidcClientId'] = '${OIDC_CLIENT_ID}';
   window['env']['oidcHttps'] = '${OIDC_HTTPS}';
+  window['env']['rolesClaimName'] = '${ROLES_CLAIM_NAME}';
+  window['env']['rolesMappings'] = '${ROLES_MAPPINGS}';
 })(this);
 ```
 
@@ -191,6 +201,9 @@ The application requires two backend services:
 - **Capabilities API**: Available search fields and filter operators
 - **Configuration API**: Runtime search configuration management
 
+#### 3. **DPP Validator Backend** (`validatorUrl`)
+- **Validation Resources API**: Upload, retrieve, search, and delete JSON schemas and RDF templates
+
 ### Configuration Examples
 
 #### Docker Compose
@@ -205,10 +218,13 @@ services:
       - "4200:80"
     environment:
       BACKEND_URL: "https://api.example.com"
-      CAPABILITIES_URL: "https://capabilities.example.com" 
+      CAPABILITIES_URL: "https://capabilities.example.com"
+      VALIDATOR_URL: "https://validator.example.com"
       OIDC_ISSUER: "https://auth.example.com/realms/cirpass"
       OIDC_CLIENT_ID: "dpp-renderer-client"
       OIDC_HTTPS: "true"
+      ROLES_CLAIM_NAME: "realm_access.roles"
+      ROLES_MAPPINGS: "admin:ADMIN,eo:EO,eu:EU"
     volumes:
       - ./env.js:/usr/share/nginx/html/assets/env.js:ro
     depends_on:
@@ -404,6 +420,53 @@ Mobile-optimized QR code scanning for direct DPP import.
 - **Direct navigation**: Seamless transition from scan to DPP viewer
 - **Error handling**: User-friendly error messages for scan failures
 
+### DPP Validation Resources
+
+Role-protected section for managing the JSON schemas and RDF templates used to validate Digital Product Passports. Accessible only to users whose token roles map to `ADMIN` or `EU` (configurable via `rolesMappings`).
+
+#### Components
+
+- **[ValidatorResourcesTableComponent](src/app/validator/validator-resources-table/)**: Searchable, paginated table of resources (templates or schemas), accessible at `/validator/templates` and `/validator/schemas`.
+- **[ValidatorResourceUploadComponent](src/app/validator/validator-resource-upload/)**: Dialog for uploading a new resource (file + metadata). 
+- **[ValidatorResourceViewComponent](src/app/validator/validator-resource-view/)**: Displays resource metadata and raw content, with automatic JSON pretty-print for schemas.
+
+#### Resource Types
+
+| Type | Description | Supported Formats |
+|---|---|---|
+| **Schema** | JSON Schema used to validate DPP payload structure | `json` |
+| **Template** | RDF template describing semantic constraints | `turtle`, `rdf_xml`, `rdf_json`, `n_triples`, `n_quads`, `n3` |
+
+#### Features
+
+- **Browse & search**: Filter by name, version, and description with server-side pagination.
+- **Upload**: Multi-part form upload (file + JSON metadata). Required fields: name, version (semver), payload type, file. Templates additionally accept an optional `contextUri`.
+- **View**: Full raw content display; JSON schemas are automatically pretty-printed.
+- **Delete**: Confirmation-gated deletion.
+- **Role guard**: The sidebar entry for Validation Resources is shown only when `AuthService.hasAnyRole('ADMIN', 'EU')` returns `true`.
+
+#### Backend API (`validatorUrl` → `/resource/v1`)
+
+```http
+# Upload a new resource
+POST /resource/v1/{payloadType}
+Content-Type: multipart/form-data
+  file: <binary>
+  meta: <ResourceMetadata JSON blob>
+
+# Get resource content by ID
+GET /resource/v1/{resourceType}/{id}
+
+# Get resource content by name and version
+GET /resource/v1/{resourceType}/{name}/{version}
+
+# Search resources (all params optional)
+GET /resource/v1/{resourceType}?name=&version=&description=&offset=0&limit=10
+
+# Delete a resource
+DELETE /resource/v1/{resourceType}/{id}
+```
+
 ## Backend API Integration
 
 ### Used Endpoints
@@ -474,19 +537,36 @@ All backend requests include OpenID Connect Bearer tokens:
 Authorization: Bearer <access_token>
 ```
 
-## Authentication
+## Authentication & Authorization
 
 The application uses **OpenID Connect (OIDC)** for authentication with support for multiple identity providers.
 
-### Configuration
-
-OIDC configuration is managed via environment variables:
+### OIDC Configuration
 
 ```javascript
-window['env']['oidcIssuer'] = 'https://auth.example.com/realms/cirpass-2';
+window['env']['oidcIssuer']   = 'https://auth.example.com/realms/cirpass-2';
 window['env']['oidcClientId'] = 'dpp-renderer-client';
-window['env']['oidcHttps'] = 'true';
+window['env']['oidcHttps']    = 'true';
 ```
+
+### Role-Based Access Control
+
+The application maps external roles from the JWT access token to internal application roles (`ADMIN`, `EO`, `EU`) via two configurable properties:
+
+| Variable | Purpose | Example |
+|---|---|---|
+| `rolesClaimName` | Dot-separated path to the roles array/value inside the JWT payload | `realm_access.roles` (Keycloak), `roles` (plain) |
+| `rolesMappings`  | Comma-separated `externalRole:INTERNAL_ROLE` pairs | `admin:ADMIN,eo:EO,eu:EU` |
+
+One external role can map to several internal roles by repeating the external key:
+
+```
+admin:ADMIN,admin:EO,eo:EO,eu:EU
+```
+
+External roles that have **no mapping entry** are passed through as-is.
+
+Role resolution is performed by `AuthService.roles` (returns a `Set<string>`) and `AuthService.hasAnyRole(...roles)`.
 
 ## License
 
