@@ -1,0 +1,111 @@
+/*
+ * Copyright 2024-2027 CIRPASS-2
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+:host ::ng-deep .p-datatable.p-datatable-striped .p-datatable-tbody > tr:nth-child(odd) {
+  background: #c8eee9;
+}
+
+:host ::ng-deep .p-datatable.p-datatable-striped .p-datatable-tbody > tr:nth-child(even) {
+  background: #ffffff;
+}
+
+:host ::ng-deep .p-datatable .p-datatable-thead > tr > th {
+  background: #0D3B5E;
+  color: #ffffff;
+}
+
+.table-caption {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.25rem;
+}
+
+.caption-left {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.caption-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 10px;
+  background: linear-gradient(135deg, var(--p-primary-color), var(--p-primary-400));
+  color: white;
+  font-size: 1.05rem;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--p-primary-color) 35%, transparent);
+  flex-shrink: 0;
+}
+
+.caption-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.caption-title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--p-text-color);
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+.caption-subtitle {
+  font-size: 0.75rem;
+  color: var(--p-text-muted-color);
+  font-weight: 400;
+}
+
+::ng-deep .caption-badge .p-tag {
+  font-size: 0.72rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 20px;
+}
+
+.search-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding: 0.25rem 0;
+}
+
+.search-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.search-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.search-field label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--p-text-color);
+}
+
+.search-actions {
+  display: flex;
+  gap: 0.5rem;
+}

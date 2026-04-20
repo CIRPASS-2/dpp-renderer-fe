@@ -17,12 +17,18 @@
 export const environment = {
     // @ts-expect-error: Dynamic environment config from window
     backendUrl: window['env']?.['backendUrl'] || 'http://localhost:8085',
-    // @ts-expect-error: Dynamic environment config from window  
+    // @ts-expect-error: Dynamic environment config from window
     capabilitiesUrl: window['env']?.['capabilitiesUrl'] || 'http://localhost:8084',
+    // @ts-expect-error: Dynamic environment config from window
+    validatorUrl: window['env']?.['validatorUrl'] || 'http://localhost:8083',
     // @ts-expect-error: Dynamic environment config from window
     oidcIssuer: window['env']?.['oidcIssuer'] || 'http://localhost:8180/realms/cirpass-2',
     // @ts-expect-error: Dynamic environment config from window
     oidcClientId: window['env']?.['oidcClientId'] || 'web-portal-fe',
     // @ts-expect-error: Dynamic environment config from window
-    oidcHttps: window['env']?.['oidcHttps'] ?? true
+    oidcHttps: window['env']?.['oidcHttps'] ?? true,
+    // @ts-expect-error: Dynamic environment config from window
+    rolesClaimName: window['env']?.['rolesClaimName'] || 'realm_access.roles',
+    // @ts-expect-error: Dynamic environment config from window
+    rolesMappings: window['env']?.['rolesMappings'] || 'admin:admin,eo:eo,eu:eu'
 };

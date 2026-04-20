@@ -17,7 +17,10 @@
 export const environment = {
     backendUrl: 'http://localhost:8085',
     capabilitiesUrl: 'http://localhost:8084',
+    validatorUrl: 'http://localhost:8083',
     oidcIssuer: 'http://localhost:8180/realms/cirpass-2',
     oidcClientId: 'web-portal-fe',
-    oidcHttps: false
+    oidcHttps: false,
+    rolesClaimName: 'realm_access.roles',
+    rolesMappings: 'admin:admin,eo:eo,eu:eu'
 };
