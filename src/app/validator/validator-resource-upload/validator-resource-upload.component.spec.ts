@@ -44,8 +44,6 @@ describe('ValidatorResourceUploadComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  // ── ngOnChanges / isTemplate ───────────────────────────────────────────────
-
   describe('isTemplate=false (schema)', () => {
     beforeEach(() => {
       component.isTemplate = false;
@@ -84,8 +82,6 @@ describe('ValidatorResourceUploadComponent', () => {
     });
   });
 
-  // ── form validation ────────────────────────────────────────────────────────
-
   describe('form validation', () => {
     it('should be invalid when empty', () => {
       expect(component.form.invalid).toBeTrue();
@@ -112,8 +108,6 @@ describe('ValidatorResourceUploadComponent', () => {
     });
   });
 
-  // ── onFileChange ───────────────────────────────────────────────────────────
-
   describe('onFileChange', () => {
     it('should set selectedFile from input event', () => {
       const file = new File(['content'], 'schema.json', { type: 'application/json' });
@@ -136,8 +130,6 @@ describe('ValidatorResourceUploadComponent', () => {
       expect(component.selectedFile).toBeNull();
     });
   });
-
-  // ── submit ─────────────────────────────────────────────────────────────────
 
   describe('submit', () => {
     const file = new File(['{}'], 'schema.json', { type: 'application/json' });
@@ -218,8 +210,6 @@ describe('ValidatorResourceUploadComponent', () => {
       expect(component.uploading).toBeFalse();
     });
   });
-
-  // ── close ──────────────────────────────────────────────────────────────────
 
   describe('close', () => {
     it('should reset form and emit visibleChange(false)', () => {

@@ -74,8 +74,6 @@ describe('ValidatorResourcesTableComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  // ── ngOnInit / route param handling ───────────────────────────────────────
-
   describe('ngOnInit', () => {
     it('should set resourceType to schema for resType=schemas', () => {
       expect(component.resourceType).toBe('schema');
@@ -113,7 +111,6 @@ describe('ValidatorResourcesTableComponent', () => {
     });
   });
 
-  // ── load error handling ────────────────────────────────────────────────────
 
   describe('load', () => {
     it('should set loading to false on error', () => {
@@ -123,7 +120,6 @@ describe('ValidatorResourcesTableComponent', () => {
     });
   });
 
-  // ── search ─────────────────────────────────────────────────────────────────
 
   describe('search', () => {
     it('should call load with form values merged into params', () => {
@@ -152,7 +148,6 @@ describe('ValidatorResourcesTableComponent', () => {
     });
   });
 
-  // ── clearSearch ────────────────────────────────────────────────────────────
 
   describe('clearSearch', () => {
     it('should reset form and reload with empty params', () => {
@@ -168,7 +163,6 @@ describe('ValidatorResourcesTableComponent', () => {
     });
   });
 
-  // ── pageChange ─────────────────────────────────────────────────────────────
 
   describe('pageChange', () => {
     it('should update currentSearchParams and call load', () => {
@@ -191,7 +185,6 @@ describe('ValidatorResourcesTableComponent', () => {
     });
   });
 
-  // ── view ───────────────────────────────────────────────────────────────────
 
   describe('view', () => {
     it('should navigate to view route with resource state', () => {
@@ -202,8 +195,6 @@ describe('ValidatorResourcesTableComponent', () => {
       );
     });
   });
-
-  // ── delete ─────────────────────────────────────────────────────────────────
 
   describe('delete', () => {
     it('should call deleteResource and reload on success', () => {

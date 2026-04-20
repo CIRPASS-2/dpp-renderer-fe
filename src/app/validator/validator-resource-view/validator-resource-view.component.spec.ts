@@ -69,7 +69,6 @@ describe('ValidatorResourceViewComponent', () => {
     }).compileComponents();
   }
 
-  // ── Schema resType ─────────────────────────────────────────────────────────
 
   describe('with resType=schemas', () => {
     beforeEach(async () => {
@@ -122,7 +121,6 @@ describe('ValidatorResourceViewComponent', () => {
     });
   });
 
-  // ── Template resType ───────────────────────────────────────────────────────
 
   describe('with resType=templates', () => {
     beforeEach(async () => {
@@ -151,8 +149,6 @@ describe('ValidatorResourceViewComponent', () => {
       expect(component.templateMeta.contextUri).toBe('https://example.com/ctx');
     });
   });
-
-  // ── back navigation ────────────────────────────────────────────────────────
 
   describe('back', () => {
     beforeEach(async () => {
