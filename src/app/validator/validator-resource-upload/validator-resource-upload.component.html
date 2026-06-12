@@ -62,7 +62,8 @@
         <div class="field">
             <label for="payloadType" class="field-label">Payload Type <span class="required">*</span></label>
             <p-select inputId="payloadType" formControlName="payloadType" [options]="payloadTypeOptions"
-                optionLabel="label" optionValue="value" placeholder="Select format" styleClass="w-full" />
+                optionLabel="label" optionValue="value" placeholder="Select format" styleClass="w-full" 
+                appendTo="body" />
             @if (f['payloadType'].touched && f['payloadType'].hasError('required')) {
             <small class="field-error">Payload type is required.</small>
             }
