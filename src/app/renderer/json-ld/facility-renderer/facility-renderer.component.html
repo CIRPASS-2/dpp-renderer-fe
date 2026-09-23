@@ -38,15 +38,38 @@
         <code class="field-value">{{ displayId }}</code>
       </div>
       }
+      @if (postalAddress) {
+      <div class="field-item">
+        <span class="field-label">Address</span>
+        <span class="field-value">{{ postalAddress }}</span>
+      </div>
+      }
+      @if (coordinates) {
+      <div class="field-item">
+        <span class="field-label">Coordinates</span>
+        <div class="field-values">
+          @if (coordinates.latitude) {
+          <span class="field-value">Latitude: {{ coordinates.latitude }}</span>
+          }
+          @if (coordinates.longitude) {
+          <span class="field-value">Longitude: {{ coordinates.longitude }}</span>
+          }
+        </div>
+      </div>
+      }
       @if (actors.length > 0) {
       <div class="field-item">
         <span class="field-label">Used By</span>
-        @for (a of actors; track a) {
-        <span class="field-value">{{ a }}</span>
+        @for (a of actors; track a['@id'] ?? $index) {
+        <span class="field-value">{{ actorLabel(a) }}</span>
         }
       </div>
       }
     </div>
+    @if (facilityIdentifier && identifierExtraUris.length > 0) {
+    <p-divider />
+    <app-abstract-renderer [node]="facilityIdentifier" [graph]="graph" [skipUris]="identifierSkipUris" />
+    }
     @if (node['@id']) {
     <a [href]="node['@id']" target="_blank" rel="noopener" class="facility-iri-footer">
       {{ node['@id'] }}

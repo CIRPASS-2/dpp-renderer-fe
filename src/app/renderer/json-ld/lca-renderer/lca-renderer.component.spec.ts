@@ -15,37 +15,89 @@
  */
 
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { EUDPP_NS } from '../../../common/cirpass-dpp-ontology';
 import { JsonLdNode } from '../../rendering-models';
+import { OntologyRegistryService } from '../ontology-registry.service';
 import { LcaRendererComponent } from './lca-renderer.component';
+
+const NS = EUDPP_NS;
+const RDFS_LABEL = 'http://www.w3.org/2000/01/rdf-schema#label';
 
 describe('LcaRendererComponent', () => {
   let component: LcaRendererComponent;
   let fixture: ComponentFixture<LcaRendererComponent>;
 
+  const resultId = 'https://example.com/lca/results/climate-change';
+  const methodId = 'https://example.com/lca/methods/ef31-climate-change';
+  const moduleValueId = 'https://example.com/lca/module-values/a1-a3';
+
   const mockLcaNode: JsonLdNode = {
-    '@id': 'https://example.com/lca/123',
-    '@type': ['https://w3id.org/eudpp-lca#LCAResult'],
-    'https://w3id.org/eudpp-lca#climateChange': [{
-      '@type': ['https://w3id.org/eudpp#QuantitativeProperty'],
-      'https://w3id.org/eudpp#numericalValue': [{ '@value': '2.5' }],
-      'https://w3id.org/eudpp#measurementUnit': [{ '@value': 'kg CO2 eq' }]
-    }],
-    'https://w3id.org/eudpp-lca#fossil': [{
-      '@type': ['https://w3id.org/eudpp#QuantitativeProperty'],
-      'https://w3id.org/eudpp#numericalValue': [{ '@value': '1.8' }],
-      'https://w3id.org/eudpp#measurementUnit': [{ '@value': 'MJ' }]
-    }]
+    '@id': 'https://example.com/lca/studies/123',
+    '@type': [`${NS}LCAStudy`],
+    [`${NS}hasLCIAResult`]: [{ '@id': resultId }],
+    [`${NS}baseName`]: [{ '@value': 'Example environmental study' }],
+    [`${NS}hasComplianceDeclaration`]: [{ '@id': 'https://example.com/lca/compliance/1' }]
   };
 
+  const mockGraph = new Map<string, JsonLdNode>([
+    [resultId, {
+      '@id': resultId,
+      '@type': [`${NS}LCIAResult`],
+      [`${NS}forLCIAOrInventoryMethod`]: [{ '@id': methodId }],
+      [`${NS}hasModuleValue`]: [{ '@id': moduleValueId }]
+    }],
+    [methodId, {
+      '@id': methodId,
+      '@type': [`${NS}LCIAOrInventoryMethod`],
+      [RDFS_LABEL]: [{ '@value': 'EF 3.1 climate method' }],
+      [`${NS}impactCategory`]: [{ '@id': `${NS}climateChange` }],
+      [`${NS}methodology`]: [{ '@id': `${NS}methodology_EF3_1` }]
+    }],
+    [moduleValueId, {
+      '@id': moduleValueId,
+      '@type': [`${NS}LCIAModuleValue`],
+      [`${NS}amount`]: [{ '@value': '2.5' }],
+      [`${NS}forModule`]: [{ '@id': `${NS}moduleA1A3` }],
+      [`${NS}hasUnit`]: [{ '@id': 'https://example.com/units/kg-co2-eq' }]
+    }],
+    [`${NS}climateChange`, {
+      '@id': `${NS}climateChange`,
+      [RDFS_LABEL]: [{ '@value': 'Climate change' }]
+    }],
+    [`${NS}moduleA1A3`, {
+      '@id': `${NS}moduleA1A3`,
+      [RDFS_LABEL]: [{ '@value': 'A1-A3 Product stage' }]
+    }],
+    [`${NS}methodology_EF3_1`, {
+      '@id': `${NS}methodology_EF3_1`,
+      [RDFS_LABEL]: [{ '@value': 'EF 3.1' }]
+    }],
+    ['https://example.com/units/kg-co2-eq', {
+      '@id': 'https://example.com/units/kg-co2-eq',
+      [RDFS_LABEL]: [{ '@value': 'kg CO2-eq' }]
+    }],
+    ['https://example.com/lca/compliance/1', {
+      '@id': 'https://example.com/lca/compliance/1',
+      '@type': [`${NS}ComplianceDeclaration`],
+      [`${NS}complianceStatus`]: [{ '@id': `${NS}fullyCompliant` }]
+    }]
+  ]);
+
   beforeEach(async () => {
+    const registrySpy = jasmine.createSpyObj('OntologyRegistryService', ['getLabel', 'resolveCategory']);
+    registrySpy.getLabel.and.callFake((uri: string) => uri.split('#').pop() ?? uri);
+    registrySpy.resolveCategory.and.returnValue('abstract');
+
     await TestBed.configureTestingModule({
-      imports: [LcaRendererComponent]
+      imports: [LcaRendererComponent],
+      providers: [{ provide: OntologyRegistryService, useValue: registrySpy }]
     })
       .compileComponents();
 
     fixture = TestBed.createComponent(LcaRendererComponent);
     component = fixture.componentInstance;
     component.node = mockLcaNode;
+    component.graph = mockGraph;
     component.ngOnChanges();
     fixture.detectChanges();
   });
@@ -54,21 +106,49 @@ describe('LcaRendererComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should initialize impact categories on changes', () => {
-    component.ngOnChanges();
-    expect(component.impacts.length).toBeGreaterThan(0);
+  it('should extract module values from a current LCA study', () => {
+    expect(component.impacts).toEqual([{
+      categoryLabel: 'Climate change',
+      indicatorLabel: 'EF 3.1 climate method - A1-A3 Product stage',
+      value: 2.5,
+      unit: 'kg CO2-eq',
+      method: 'EF 3.1 climate method'
+    }]);
   });
 
-  it('should extract climate change impact correctly', () => {
+  it('should resolve the methodology through the result method', () => {
+    expect(component.methodologyName).toBe('EF 3.1');
+  });
+
+  it('should delegate current study metadata to the generic renderer', () => {
+    expect(component.extraUris).toEqual([
+      `${NS}baseName`,
+      `${NS}hasComplianceDeclaration`,
+    ]);
+  });
+
+  it('should render a result node directly', () => {
+    component.node = mockGraph.get(resultId)!;
     component.ngOnChanges();
-    // OntologyRegistryService is not properly mocked, so impacts array may be empty
-    // Just verify the component doesn't crash and impacts is an array
-    expect(component.impacts).toBeDefined();
-    expect(Array.isArray(component.impacts)).toBe(true);
-    // Note: Without proper ontology registry mocking, specific impact extraction may not work
-    if (component.impacts.length > 0) {
-      const firstImpact = component.impacts[0];
-      expect(firstImpact.categoryLabel).toBeDefined();
-    }
+
+    expect(component.impacts).toHaveSize(1);
+    expect(component.impacts[0].value).toBe(2.5);
+  });
+
+  it('should format numeric values for display', () => {
+    expect(component.formatValue(2.5)).toBe('2.5');
+    expect(component.formatValue(0.00001)).toBe('1.0000e-5');
+  });
+
+  it('should prefer an OM-2 unit symbol when it is available', () => {
+    const graphWithSymbol = new Map(mockGraph);
+    graphWithSymbol.set('https://example.com/units/kg-co2-eq', {
+      '@id': 'https://example.com/units/kg-co2-eq',
+      'http://www.ontology-of-units-of-measure.org/resource/om-2/symbol': [{ '@value': 'kg CO2-eq' }]
+    });
+    component.graph = graphWithSymbol;
+    component.ngOnChanges();
+
+    expect(component.impacts[0].unit).toBe('kg CO2-eq');
   });
 });

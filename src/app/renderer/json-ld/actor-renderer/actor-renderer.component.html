@@ -43,6 +43,25 @@
         </div>
         }
 
+        @if (roleAssignmentDetails.length > 0) {
+        <div class="actor-role-details">
+            @for (assignment of roleAssignmentDetails; track $index) {
+            <div class="role-detail">
+                <span class="role-detail-name">{{ assignment.label }}</span>
+                @if (assignment.representedManufacturer) {
+                <span>Represents: {{ assignment.representedManufacturer }}</span>
+                }
+                @if (assignment.validFrom) {
+                <span>Valid from: {{ assignment.validFrom }}</span>
+                }
+                @if (assignment.validTo) {
+                <span>Valid to: {{ assignment.validTo }}</span>
+                }
+            </div>
+            }
+        </div>
+        }
+
         <div class="actor-fields">
             @if (tradeName) {
             <div class="field-item">
@@ -60,8 +79,8 @@
             <div class="field-item">
                 <span class="field-label">Contact</span>
                 <div class="field-multi">
-                    @for (c of contacts; track c) {
-                    <span class="field-value">{{ c }}</span>
+                    @for (c of contacts; track c.href) {
+                    <a [href]="c.href" class="field-link">{{ c.label }}: {{ c.value }}</a>
                     }
                 </div>
             </div>
@@ -74,6 +93,11 @@
             }
         </div>
 
+        @if (operatorIdentifier && identifierExtraUris.length > 0) {
+        <p-divider />
+        <app-abstract-renderer [node]="operatorIdentifier" [graph]="graph" [skipUris]="identifierSkipUris" />
+        }
+
         @if (facilities.length > 0) {
         <p-divider />
         <div class="actor-section-label">Facilities</div>
@@ -82,6 +106,24 @@
             <div class="facility-item">
                 <span class="facility-icon">🏭</span>
                 <span>{{ facilityLabel(fac) }}</span>
+            </div>
+            }
+        </div>
+        }
+
+        @if (representativeMandates.length > 0) {
+        <p-divider />
+        <div class="actor-section-label">Authorised Representatives</div>
+        <div class="representative-mandates">
+            @for (mandate of representativeMandates; track mandate.representative) {
+            <div class="mandate-item">
+                <span>{{ mandate.representative }}</span>
+                @if (mandate.validFrom) {
+                <span>Valid from: {{ mandate.validFrom }}</span>
+                }
+                @if (mandate.validTo) {
+                <span>Valid to: {{ mandate.validTo }}</span>
+                }
             </div>
             }
         </div>

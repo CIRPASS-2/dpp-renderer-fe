@@ -18,12 +18,14 @@ import { Component, Input, OnChanges } from '@angular/core';
 import { CardModule } from 'primeng/card';
 import { DividerModule } from 'primeng/divider';
 import { TooltipModule } from 'primeng/tooltip';
-import { EUDPP_LCA_NS, EUDPP_NS } from '../../../common/cirpass-dpp-ontology';
-import { JsonLdNode, JsonLdPropertyValue, extractNumber, isJsonLdNode } from '../../rendering-models';
+import { EUDPP_NS } from '../../../common/cirpass-dpp-ontology';
+import { JsonLdNode, JsonLdPropertyValue, extractNumber, extractPropertyUris, extractString, isJsonLdNode } from '../../rendering-models';
+import { AbstractRendererComponent } from '../abstract-renderer/abstract-renderer.component';
 import { OntologyRegistryService } from '../ontology-registry.service';
 
-const LCA = EUDPP_LCA_NS;
 const NS = EUDPP_NS;
+const RDFS_LABEL = 'http://www.w3.org/2000/01/rdf-schema#label';
+const OM2_SYMBOL = 'http://www.ontology-of-units-of-measure.org/resource/om-2/symbol';
 
 interface ImpactEntry {
   categoryLabel: string;
@@ -39,7 +41,7 @@ interface ImpactEntry {
  */
 @Component({
   selector: 'app-lca-renderer',
-  imports: [CardModule, DividerModule, TooltipModule],
+  imports: [CardModule, DividerModule, TooltipModule, AbstractRendererComponent],
   templateUrl: './lca-renderer.component.html',
   styleUrl: './lca-renderer.component.css'
 })
@@ -48,10 +50,25 @@ export class LcaRendererComponent implements OnChanges {
   @Input() graph: Map<string, JsonLdNode> = new Map();
 
   impacts: ImpactEntry[] = [];
-  footprintLabel = 'Environmental Footprint (LCA)';
+  footprintLabel = 'Life Cycle Assessment';
   methodologyName: string | null = null;
 
-  constructor(private registry: OntologyRegistryService) { }
+  readonly handledUris = [
+    `${NS}hasLCAResult`,
+    `${NS}hasLCIAResult`,
+    `${NS}hasInventoryIndicatorResult`,
+    `${NS}forLCIAOrInventoryMethod`,
+    `${NS}hasModuleValue`,
+    `${NS}impactCategory`,
+    `${NS}hasUnit`,
+    `${NS}forModule`,
+    `${NS}forScenario`,
+    `${NS}amount`,
+    `${NS}isDeclared`,
+    `${NS}methodology`,
+  ];
+
+  constructor(private readonly registry: OntologyRegistryService) { }
 
   ngOnChanges(): void {
     this.resolveFootprintLabel();
@@ -59,83 +76,81 @@ export class LcaRendererComponent implements OnChanges {
     this.resolveMethodology();
   }
 
+  get extraUris(): string[] {
+    const handled = new Set(this.handledUris);
+    return extractPropertyUris(this.node).filter(uri => !handled.has(uri));
+  }
+
   private resolveFootprintLabel(): void {
     const types = (this.node['@type'] as string[]) ?? [];
     this.footprintLabel = types.length > 0
       ? this.registry.getLabel(types[0])
-      : 'Environmental Footprint (LCA)';
+      : 'Life Cycle Assessment';
   }
 
-  /**
-   * Walk the LCA graph structure:
-   */
   private buildImpacts(): void {
     this.impacts = [];
 
-    // Collect ICI nodes referenced from this footprint node
-    const iciNodes = this.collectLinked(this.node, [
-      `${LCA}quantifies`,
-      `${LCA}quantified_by`,
-      `${LCA}ICI_quantified_by_CF`,
-    ]);
+    for (const result of this.resultNodes()) {
+      const method = this.collectLinked(result, [`${NS}forLCIAOrInventoryMethod`])[0];
+      const category = method
+        ? this.collectLinked(method, [`${NS}impactCategory`])[0]
+        : undefined;
+      const categoryLabel = this.labelFromNode(category) ?? this.labelFromNode(result) ?? 'LCA Result';
+      const methodLabel = this.labelFromNode(method) ?? this.labelFromNode(result) ?? 'LCA Result';
+      const moduleValues = this.collectLinked(result, [`${NS}hasModuleValue`]);
 
-    // If nothing found, look for Impact_Category nodes directly
-    const icNodes = this.collectLinked(this.node, [
-      `${LCA}ICI_assess_IC`,
-      `${LCA}corresponds_to_IC`,
-      `${LCA}related_to`,
-    ]);
+      if (moduleValues.length === 0) {
+        this.impacts.push({
+          categoryLabel,
+          indicatorLabel: methodLabel,
+          value: null,
+          unit: this.unitLabel(method),
+          method: this.labelFromNode(method),
+        });
+        continue;
+      }
 
-    const targets = iciNodes.length > 0 ? iciNodes : icNodes.length > 0 ? icNodes : [this.node];
+      for (const moduleValue of moduleValues) {
+        const module = this.collectLinked(moduleValue, [`${NS}forModule`])[0];
+        const moduleLabel = this.labelFromNode(module);
+        const scenario = extractString(moduleValue, `${NS}forScenario`);
+        const amount = extractNumber(moduleValue, `${NS}amount`);
+        const isDeclared = extractString(moduleValue, `${NS}isDeclared`);
 
-    for (const ici of targets) {
-      const entry = this.extractEntry(ici);
-      if (entry) this.impacts.push(entry);
-    }
-
-    // If still empty, try to render the node itself if it has numeric data
-    if (this.impacts.length === 0) {
-      const self = this.extractEntry(this.node);
-      if (self) this.impacts.push(self);
+        this.impacts.push({
+          categoryLabel,
+          indicatorLabel: [methodLabel, moduleLabel, scenario].filter(Boolean).join(' - '),
+          value: amount ?? (isDeclared === 'false' ? 'Not declared' : null),
+          unit: this.unitLabel(moduleValue) ?? this.unitLabel(method),
+          method: this.labelFromNode(method),
+        });
+      }
     }
   }
 
-  private extractEntry(node: JsonLdNode): ImpactEntry | null {
-    const types = (node['@type'] as string[]) ?? [];
-    const catLabel = types.length > 0 ? this.registry.getLabel(types[0]) : 'Impact';
+  private resultNodes(): JsonLdNode[] {
+    const linkedResults = this.collectLinked(this.node, [
+      `${NS}hasLCAResult`,
+      `${NS}hasLCIAResult`,
+      `${NS}hasInventoryIndicatorResult`,
+    ]);
+    if (linkedResults.length > 0) return this.uniqueNodes(linkedResults);
 
-    // category label from Impact_Category
-    const icNodes = this.collectLinked(node, [`${LCA}ICI_assess_IC`, `${LCA}corresponds_to_IC`]);
-    const icLabel = icNodes.length > 0
-      ? (this.labelFromNode(icNodes[0]) ?? catLabel)
-      : catLabel;
+    const hasResultData = this.collectLinked(this.node, [
+      `${NS}forLCIAOrInventoryMethod`,
+      `${NS}hasModuleValue`,
+    ]).length > 0;
+    return hasResultData ? [this.node] : [];
+  }
 
-    const resultNodes = this.collectLinked(node, [`${LCA}ICI_computes_IR`, `${LCA}quantifies`]);
-    let value: number | string | null = null;
-    let unit: string | null = null;
+  private unitLabel(node: JsonLdNode | undefined): string | null {
+    if (!node) return null;
 
-    if (resultNodes.length > 0) {
-      const r = resultNodes[0];
-      value = extractNumber(r, `${NS}numericalValue`) ?? extractNumber(r, `${NS}value`) ?? null;
-      const unitNodes = this.collectLinked(r, [`${LCA}has_unit`]);
-      if (unitNodes.length > 0) {
-        unit = this.labelFromNode(unitNodes[0]);
-      }
-    } else {
-      value = extractNumber(node, `${NS}numericalValue`) ??
-        extractNumber(node, `${NS}value`) ?? null;
-    }
-
-    const methodNodes = this.collectLinked(node, [`${LCA}CF_calculated_by_CM`, `${LCA}CM_used_in_method`]);
-    const method = methodNodes.length > 0 ? this.labelFromNode(methodNodes[0]) : null;
-
-    return {
-      categoryLabel: icLabel ?? catLabel,
-      indicatorLabel: this.labelFromNode(node) ?? catLabel,
-      value,
-      unit,
-      method,
-    };
+    const unit = this.collectLinked(node, [`${NS}hasUnit`])[0];
+    return unit
+      ? extractString(unit, OM2_SYMBOL) ?? this.labelFromNode(unit)
+      : extractString(node, `${NS}unitAsString`) ?? null;
   }
 
   private collectLinked(node: JsonLdNode, properties: string[]): JsonLdNode[] {
@@ -154,25 +169,33 @@ export class LcaRendererComponent implements OnChanges {
     return results;
   }
 
-  private labelFromNode(node: JsonLdNode): string | null {
-    // Try rdfs:label first
-    const labelProp = 'http://www.w3.org/2000/01/rdf-schema#label';
-    const arr = node[labelProp] as JsonLdPropertyValue | undefined;
-    if (Array.isArray(arr) && arr.length > 0 && isJsonLdNode(arr[0])) {
-      const v = (arr[0] as any)['@value'];
-      if (v) return String(v);
-    }
-    // Fallbak use type label
+  private uniqueNodes(nodes: JsonLdNode[]): JsonLdNode[] {
+    return nodes.filter((node, index) => {
+      const id = node['@id'];
+      return !id || nodes.findIndex(candidate => candidate['@id'] === id) === index;
+    });
+  }
+
+  private labelFromNode(node: JsonLdNode | undefined): string | null {
+    if (!node) return null;
+
+    const label = extractString(node, RDFS_LABEL);
+    if (label) return label;
+
+    const id = node['@id'] as string | undefined;
+    if (id) return this.registry.getLabel(id);
+
     const types = (node['@type'] as string[]) ?? [];
     return types.length > 0 ? this.registry.getLabel(types[0]) : null;
   }
 
   private resolveMethodology(): void {
-    const methNodes = this.collectLinked(this.node, [
-      `${LCA}CM_used_in_method`,
-      `${LCA}method_uses_CM`,
-    ]);
-    this.methodologyName = methNodes.length > 0 ? this.labelFromNode(methNodes[0]) : null;
+    const method = this.resultNodes()
+      .flatMap(result => this.collectLinked(result, [`${NS}forLCIAOrInventoryMethod`]))[0];
+    const methodology = method
+      ? this.collectLinked(method, [`${NS}methodology`])[0]
+      : undefined;
+    this.methodologyName = this.labelFromNode(methodology);
   }
 
   /**

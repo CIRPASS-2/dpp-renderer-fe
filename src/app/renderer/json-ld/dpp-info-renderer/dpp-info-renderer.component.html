@@ -40,6 +40,11 @@
     }
   </div>
 
+  @if (dppIdentifier && identifierExtraUris.length > 0) {
+  <p-divider />
+  <app-abstract-renderer [node]="dppIdentifier" [graph]="graph" [skipUris]="identifierSkipUris" />
+  }
+
   @if (extraUris.length > 0) {
   <p-divider />
   <app-abstract-renderer [node]="node" [graph]="graph" [skipUris]="knownUris" />

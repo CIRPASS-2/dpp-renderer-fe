@@ -1,0 +1,57 @@
+<!--
+  Copyright 2024-2027 CIRPASS-2
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+<p-card styleClass="event-card">
+  <ng-template pTemplate="title">
+    <div class="event-title-row">
+      <span>{{ title }}</span>
+      @if (eventId) {
+      <code class="event-id">{{ eventId }}</code>
+      }
+    </div>
+  </ng-template>
+
+  <ng-template pTemplate="content">
+    @if (summaryFields.length > 0) {
+    <div class="event-fields">
+      @for (field of summaryFields; track field.uri) {
+      <div class="field-item">
+        <span class="field-label">{{ field.uri | label }}</span>
+        <div class="field-values">
+          @for (value of field.values; track $index) {
+          @if (isLink(value)) {
+          <a [href]="value.href" target="_blank" rel="noopener" class="field-link">{{ value.text }}</a>
+          } @else {
+          <span class="field-value">{{ value.text }}</span>
+          }
+          }
+        </div>
+      </div>
+      }
+    </div>
+    }
+
+    @if (extraUris.length > 0) {
+    <p-divider />
+    <app-abstract-renderer [node]="currentNode" [graph]="graph" [skipUris]="knownUris" />
+    }
+
+    @if (currentNode['@id']) {
+    <p-divider />
+    <a [href]="currentNode['@id']" target="_blank" rel="noopener" class="event-iri">{{ currentNode['@id'] }}</a>
+    }
+  </ng-template>
+</p-card>

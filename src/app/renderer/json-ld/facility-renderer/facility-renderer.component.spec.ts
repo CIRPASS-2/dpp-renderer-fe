@@ -20,23 +20,21 @@ import { JsonLdNode } from '../../rendering-models';
 import { FacilityRendererComponent } from './facility-renderer.component';
 
 const NS = EUDPP_NS;
+const SCHEMA = 'https://schema.org/';
 
 describe('FacilityRendererComponent', () => {
   let component: FacilityRendererComponent;
   let fixture: ComponentFixture<FacilityRendererComponent>;
 
+  const facilityIdentifierId = 'https://example.com/identifiers/facility-123';
+
   const mockFacilityNode: JsonLdNode = {
     '@id': 'https://example.com/facility/123',
     '@type': [`${NS}Facility`],
-    [`${NS}uniqueFacilityID`]: [{ '@value': 'FAC-MAIN-001' }],
-    [`${NS}facilityID`]: [{ '@value': 'FAC-ALT-002' }],
-    [`${NS}facilityName`]: [{ '@value': 'Main Production Facility' }],
-    [`${NS}facilityAddress`]: [{ '@value': '123 Industrial Ave, Manufacturing City, MC 12345' }],
-    [`${NS}facilityCountry`]: [{ '@value': 'Germany' }],
-    [`${NS}operatedByActor`]: [
-      { '@value': 'Manufacturing Corp' },
-      { '@value': 'Operations Ltd' }
-    ]
+    [`${NS}hasUniqueFacilityIdentifier`]: [{ '@id': facilityIdentifierId }],
+    [`${SCHEMA}address`]: [{ '@id': 'https://example.com/address/facility-123' }],
+    [`${SCHEMA}geo`]: [{ '@id': 'https://example.com/geo/facility-123' }],
+    [`${NS}isUsedByActor`]: [{ '@id': 'https://example.com/actor/direct' }]
   };
 
   const mockIriOnlyFacility: JsonLdNode = {
@@ -44,6 +42,44 @@ describe('FacilityRendererComponent', () => {
   };
 
   const mockGraph = new Map<string, JsonLdNode>([
+    [facilityIdentifierId, {
+      '@id': facilityIdentifierId,
+      '@type': [`${NS}FacilityIdentifier`],
+      [`${NS}identifierValue`]: [{ '@value': 'FAC-MAIN-001' }],
+      [`${NS}hasScheme`]: [{ '@id': 'https://example.com/schemes/gln' }],
+      [`${NS}identifierIssuedOn`]: [{ '@value': '2026-03-01' }],
+      [`${NS}identifierExpiresOn`]: [{ '@value': '2031-03-01' }]
+    }],
+    ['https://example.com/schemes/gln', {
+      '@id': 'https://example.com/schemes/gln',
+      '@type': [`${NS}ActorIdentifierScheme`],
+      'http://www.w3.org/2000/01/rdf-schema#label': [{ '@value': 'GLN' }]
+    }],
+    ['https://example.com/address/facility-123', {
+      '@id': 'https://example.com/address/facility-123',
+      '@type': [`${SCHEMA}PostalAddress`],
+      [`${SCHEMA}streetAddress`]: [{ '@value': '123 Industrial Ave' }],
+      [`${SCHEMA}postalCode`]: [{ '@value': '12345' }],
+      [`${SCHEMA}addressLocality`]: [{ '@value': 'Manufacturing City' }],
+      [`${SCHEMA}addressCountry`]: [{ '@value': 'Germany' }]
+    }],
+    ['https://example.com/geo/facility-123', {
+      '@id': 'https://example.com/geo/facility-123',
+      '@type': [`${SCHEMA}GeoCoordinates`],
+      [`${SCHEMA}latitude`]: [{ '@value': '52.5200' }],
+      [`${SCHEMA}longitude`]: [{ '@value': '13.4050' }]
+    }],
+    ['https://example.com/actor/direct', {
+      '@id': 'https://example.com/actor/direct',
+      '@type': [`${NS}LegalPerson`],
+      [`${NS}actorName`]: [{ '@value': 'Manufacturing Corp' }]
+    }],
+    ['https://example.com/actor/reverse', {
+      '@id': 'https://example.com/actor/reverse',
+      '@type': [`${NS}LegalPerson`],
+      [`${NS}actorName`]: [{ '@value': 'Operations Ltd' }],
+      [`${NS}usesFacility`]: [{ '@id': 'https://example.com/facility/123' }]
+    }],
     ['https://example.com/facility/456', {
       '@id': 'https://example.com/facility/456',
       '@type': [`${NS}Facility`],
@@ -133,23 +169,27 @@ describe('FacilityRendererComponent', () => {
       component.ngOnChanges();
     });
 
-    it('should return uniqueFacilityID when available', () => {
+    it('should return the FacilityIdentifier value when available', () => {
       expect(component.displayId).toBe('FAC-MAIN-001');
     });
 
-    it('should fallback to facilityID when uniqueFacilityID not available', () => {
+    it('should return undefined when no identifier is available', () => {
       const nodeWithoutUnique = { ...mockFacilityNode };
-      delete nodeWithoutUnique[`${NS}uniqueFacilityID`];
+      delete nodeWithoutUnique[`${NS}hasUniqueFacilityIdentifier`];
       component.node = nodeWithoutUnique;
       component.ngOnChanges();
 
-      expect(component.displayId).toBe('FAC-ALT-002');
-    });
-
-    it('should return undefined when no IDs available', () => {
-      component.node = { '@id': 'no-ids' };
-      component.ngOnChanges();
       expect(component.displayId).toBeUndefined();
+    });
+  });
+
+  describe('identifier metadata', () => {
+    it('should retain scheme and validity metadata from the referenced identifier', () => {
+      expect(component.identifierExtraUris).toEqual([
+        `${NS}hasScheme`,
+        `${NS}identifierIssuedOn`,
+        `${NS}identifierExpiresOn`,
+      ]);
     });
   });
 
@@ -158,14 +198,46 @@ describe('FacilityRendererComponent', () => {
       component.ngOnChanges();
     });
 
-    it('should return array of operating actors', () => {
-      expect(component.actors).toEqual([]); // Mock doesn't have isUsedByActor property
+    it('should resolve direct and reverse actor links', () => {
+      expect(component.actors.map(actor => component.actorLabel(actor))).toEqual([
+        'Manufacturing Corp',
+        'Operations Ltd'
+      ]);
     });
 
     it('should return empty array when no actors', () => {
       component.node = { '@id': 'no-actors' };
       component.ngOnChanges();
       expect(component.actors).toEqual([]);
+    });
+  });
+
+  describe('postalAddress getter', () => {
+    it('should format a schema.org postal address', () => {
+      expect(component.postalAddress).toBe('123 Industrial Ave, 12345 Manufacturing City, Germany');
+    });
+
+    it('should return undefined when no address is available', () => {
+      component.node = { '@id': 'no-address' };
+      component.ngOnChanges();
+
+      expect(component.postalAddress).toBeUndefined();
+    });
+  });
+
+  describe('coordinates getter', () => {
+    it('should resolve schema.org geographic coordinates', () => {
+      expect(component.coordinates).toEqual({
+        latitude: '52.5200',
+        longitude: '13.4050'
+      });
+    });
+
+    it('should return undefined when no coordinates are available', () => {
+      component.node = { '@id': 'no-coordinates' };
+      component.ngOnChanges();
+
+      expect(component.coordinates).toBeUndefined();
     });
   });
 

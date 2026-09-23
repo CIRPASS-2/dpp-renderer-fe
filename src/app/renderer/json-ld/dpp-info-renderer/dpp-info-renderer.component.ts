@@ -20,7 +20,7 @@ import { DividerModule } from 'primeng/divider';
 import { TagModule } from 'primeng/tag';
 import { EUDPP_NS } from '../../../common/cirpass-dpp-ontology';
 import { LabelPipe } from '../../../common/label-pipe';
-import { extractPropertyUris, extractString, JsonLdNode } from '../../rendering-models';
+import { extractNodes, extractPropertyUris, extractString, JsonLdNode } from '../../rendering-models';
 import { AbstractRendererComponent } from '../abstract-renderer/abstract-renderer.component';
 
 const NS = EUDPP_NS;
@@ -43,29 +43,45 @@ export class DppInfoRendererComponent {
   @Input({ required: true }) node!: JsonLdNode;
   @Input() graph: Map<string, JsonLdNode> = new Map();
 
-  readonly nsUniqueId = `${NS}uniqueDPPID`;
+  readonly nsUniqueId = `${NS}hasDigitalProductPassportId`;
 
   readonly knownUris = [
-    `${NS}uniqueDPPID`, `${NS}status`, `${NS}schemaVersion`,
+    `${NS}hasDigitalProductPassportId`, `${NS}dppStatus`, `${NS}granularity`,
     `${NS}validFrom`, `${NS}validUntil`, `${NS}lastUpdate`,
     `${NS}linkToPreviousDPP`,
   ];
 
+  readonly identifierSkipUris = [`${NS}identifierValue`];
+
+  /** Gets the DPP identifier node resolved from the document graph. */
+  get dppIdentifier(): JsonLdNode | undefined {
+    return this.resolveNode(extractNodes(this.node, `${NS}hasDigitalProductPassportId`)[0]);
+  }
+
   /** Gets the unique DPP identifier */
-  get dppId() { return extractString(this.node, `${NS}uniqueDPPID`); }
+  get dppId() {
+    return this.dppIdentifier
+      ? extractString(this.dppIdentifier, `${NS}identifierValue`)
+      : undefined;
+  }
 
   /** Gets the current status of the DPP */
-  get status() { return extractString(this.node, `${NS}status`); }
+  get status() { return extractString(this.node, `${NS}dppStatus`); }
+
+  private resolveNode(node: JsonLdNode | undefined): JsonLdNode | undefined {
+    return node?.['@id'] ? this.graph.get(node['@id']) ?? node : node;
+  }
 
   /**
    * Gets the visual severity for the status tag based on the status value.
-   * Active = success (green), Inactive = warning (yellow), Revoked = danger (red)
+  * Active = success (green), Archived/Inactive = warning (yellow), Invalid = danger (red)
    */
   get statusSeverity(): StatusSeverity {
     switch ((this.status ?? '').toLowerCase()) {
       case 'active': return 'success';
+    case 'archived':
       case 'inactive': return 'warning';
-      case 'revoked': return 'danger';
+    case 'invalid': return 'danger';
       default: return 'info';
     }
   }
@@ -75,7 +91,7 @@ export class DppInfoRendererComponent {
    * Returns fields like schema version, validity dates, and previous DPP links.
    */
   get metaFields(): { uri: string; value: string }[] {
-    const skip = new Set([`${NS}uniqueDPPID`, `${NS}status`]);
+    const skip = new Set([`${NS}hasDigitalProductPassportId`, `${NS}dppStatus`]);
     return this.knownUris
       .filter(uri => !skip.has(uri))
       .map(uri => ({ uri, value: extractString(this.node, uri) ?? '' }))
@@ -86,6 +102,13 @@ export class DppInfoRendererComponent {
   get extraUris(): string[] {
     const known = new Set(this.knownUris);
     return extractPropertyUris(this.node).filter(u => !known.has(u));
+  }
+
+  /** Gets identifier properties not already displayed as the DPP identifier. */
+  get identifierExtraUris(): string[] {
+    return this.dppIdentifier
+      ? extractPropertyUris(this.dppIdentifier).filter(uri => !this.identifierSkipUris.includes(uri))
+      : [];
   }
 
   /**

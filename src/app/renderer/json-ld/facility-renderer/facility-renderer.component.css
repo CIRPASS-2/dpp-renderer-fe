@@ -23,4 +23,5 @@
 .field-item          { display: flex; flex-direction: column; gap: 0.15rem; }
 .field-label         { font-size: 0.72rem; font-weight: 600; color: #6c757d; text-transform: uppercase; letter-spacing: 0.05em; }
 .field-value         { font-size: 0.9rem; }
+.field-values        { display: flex; flex-direction: column; gap: 0.1rem; }
 .facility-iri-footer { font-size: 0.75rem; color: #6366f1; word-break: break-all; }

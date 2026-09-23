@@ -59,6 +59,11 @@
     </div>
     }
 
+    @if (extraUris.length > 0) {
+    <p-divider />
+    <app-abstract-renderer [node]="node" [graph]="graph" [skipUris]="handledUris" />
+    }
+
     @if (node['@id']) {
     <p-divider />
     <a [href]="node['@id']" target="_blank" rel="noopener" class="lca-iri">{{ node['@id'] }}</a>

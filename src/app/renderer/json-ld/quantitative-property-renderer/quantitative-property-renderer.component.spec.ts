@@ -19,6 +19,8 @@ import { JsonLdNode } from '../../rendering-models';
 import { OntologyRegistryService } from '../ontology-registry.service';
 import { QuantitativePropertyRendererComponent } from './quantitative-property-renderer.component';
 
+const SI_NS = 'https://si-digital-framework.org/SI#';
+
 describe('QuantitativePropertyRendererComponent', () => {
   let component: QuantitativePropertyRendererComponent;
   let fixture: ComponentFixture<QuantitativePropertyRendererComponent>;
@@ -31,7 +33,7 @@ describe('QuantitativePropertyRendererComponent', () => {
     'https://w3id.org/eudpp#tolerance': [{ '@value': '0.1' }],
     'https://w3id.org/eudpp#dictionaryReference': [{ '@value': 'https://dict.example.com/weight' }],
     'https://w3id.org/eudpp#hasMeasurementUnit': [{
-      '@type': ['https://w3id.org/eudpp#MeasurementUnit'],
+      '@type': [`${SI_NS}MeasurementUnit`],
       'https://w3id.org/eudpp#value': [{ '@value': 'kg' }]
     }]
   };
@@ -74,6 +76,21 @@ describe('QuantitativePropertyRendererComponent', () => {
   });
 
   it('should extract unit correctly', () => {
+    expect(component.unit).toBe('kg');
+  });
+
+  it('should resolve a graph-referenced measurement unit', () => {
+    const unitId = 'https://example.com/units/kilogram';
+    component.node = {
+      ...mockQuantitativePropertyNode,
+      'https://w3id.org/eudpp#hasMeasurementUnit': [{ '@id': unitId }]
+    };
+    component.graph = new Map([[unitId, {
+      '@id': unitId,
+      '@type': [`${SI_NS}MeasurementUnit`],
+      'https://w3id.org/eudpp#value': [{ '@value': 'kg' }]
+    }]]);
+
     expect(component.unit).toBe('kg');
   });
 

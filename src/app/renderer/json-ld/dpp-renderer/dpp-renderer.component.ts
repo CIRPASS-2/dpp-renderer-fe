@@ -17,7 +17,7 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { MessageModule } from 'primeng/message';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
-import { RenderCategory } from '../../../common/cirpass-dpp-ontology';
+import { EUDPP_NS, RenderCategory } from '../../../common/cirpass-dpp-ontology';
 import {
   ExpandedJsonLd,
   isIriOnlyRef,
@@ -30,6 +30,7 @@ import { ActorRendererComponent } from '../actor-renderer/actor-renderer.compone
 import { ClassificationCodeRendererComponent } from '../clasification-code-renderer/classification-code-renderer.component';
 import { DocumentRendererComponent } from '../document-renderer/document-renderer.component';
 import { DppInfoRendererComponent } from '../dpp-info-renderer/dpp-info-renderer.component';
+import { EventRendererComponent } from '../event-renderer/event-renderer.component';
 import { FacilityRendererComponent } from '../facility-renderer/facility-renderer.component';
 import { LcaRendererComponent } from '../lca-renderer/lca-renderer.component';
 import { OntologyRegistryService } from '../ontology-registry.service';
@@ -52,6 +53,17 @@ export interface ResolvedNode {
  */
 const ALWAYS_ROOT_CATEGORIES = new Set<RenderCategory>(['product', 'dpp']);
 
+const AUXILIARY_TYPES = new Set([
+  `${EUDPP_NS}ActorRoleAssignment`,
+  `${EUDPP_NS}AuthorisedRepresentativeRoleAssignment`,
+]);
+
+const NESTED_LCA_RESULT_TYPES = new Set([
+  `${EUDPP_NS}LCAResult`,
+  `${EUDPP_NS}LCIAResult`,
+  `${EUDPP_NS}InventoryIndicatorResult`,
+]);
+
 /**
  * Main component for rendering expanded JSON-LD DPP documents.
  * Processes complex JSON-LD graphs, resolves node relationships, and orchestrates 
@@ -71,6 +83,7 @@ const ALWAYS_ROOT_CATEGORIES = new Set<RenderCategory>(['product', 'dpp']);
     ProductRendererComponent,
     AbstractRendererComponent,
     DppInfoRendererComponent,
+    EventRendererComponent,
     ClassificationCodeRendererComponent,
     QuantitativePropertyRendererComponent,
   ],
@@ -85,7 +98,7 @@ export class DppRendererComponent implements OnChanges {
   error?: string;
   loading = true;
 
-  constructor(private registry: OntologyRegistryService) { }
+  constructor(private readonly registry: OntologyRegistryService) { }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['expandedJsonLd']) {
@@ -121,29 +134,9 @@ export class DppRendererComponent implements OnChanges {
     // Pass 3 – select top-level renderable nodes
     for (const node of this.expandedJsonLd) {
       const types = (node['@type'] as string[]) ?? [];
-      const id = node['@id'] as string | undefined;
       const category = this.registry.resolveCategory(types);
 
-      // 1. Never render bare IRI-only stubs ({ @id } with no other content)
-      if (isIriOnlyRef(node)) continue;
-
-      // 2. Skip nodes that carry no data beyond @id / @type.
-      //    Covers bare Role stubs and similar link-only nodes.
-      const dataKeys = Object.keys(node).filter(k => k !== '@id' && k !== '@type');
-      if (dataKeys.length === 0) continue;
-
-      // 3. Strategy C: skip a node only when BOTH conditions hold:
-      //    a) its type resolves to 'abstract' — it has no dedicated renderer,
-      //       meaning it is an auxiliary data structure, not a domain entity
-      //    b) it is referenced by at least one other node — meaning a parent
-      //       component already renders it inline (e.g. SubstanceRenderer
-      //       renders Concentration/Threshold; ProductRenderer renders
-      //       PackagingDetail)
-      //
-      //    Nodes with a known category (actor, substance, quantitative-property
-      //    …) are domain entities with their own identity and always get a
-      //    top-level card, even if a parent also references them.
-      if (category === 'abstract' && id && referencedIds.has(id)) continue;
+      if (!this.isRenderable(node, types, category, referencedIds)) continue;
 
       this.resolvedNodes.push({ node, category });
     }
@@ -159,6 +152,22 @@ export class DppRendererComponent implements OnChanges {
     this.loading = false;
   }
 
+  private isRenderable(
+    node: JsonLdNode,
+    types: string[],
+    category: RenderCategory,
+    referencedIds: Set<string>,
+  ): boolean {
+    if (isIriOnlyRef(node)) return false;
+    if (!Object.keys(node).some(key => key !== '@id' && key !== '@type')) return false;
+    if (types.some(type => AUXILIARY_TYPES.has(type))) return false;
+
+    const id = node['@id'] as string | undefined;
+    if (id && referencedIds.has(id) && types.some(type => NESTED_LCA_RESULT_TYPES.has(type))) return false;
+
+    return category !== 'abstract' || !id || !referencedIds.has(id);
+  }
+
   /**
    * Walks every property array of every node and collects the @id of each
    * object value (both IRI-only refs and inline nodes with an @id).
@@ -172,22 +181,30 @@ export class DppRendererComponent implements OnChanges {
     const referenced = new Set<string>();
 
     for (const node of this.expandedJsonLd) {
-      for (const key of Object.keys(node)) {
-        if (key === '@id' || key === '@type') continue;
-
-        const values = node[key] as JsonLdPropertyValue | undefined;
-        if (!Array.isArray(values)) continue;
-
-        for (const v of values) {
-          if (isJsonLdNode(v)) {
-            const childId = (v as JsonLdNode)['@id'] as string | undefined;
-            if (childId) referenced.add(childId);
-          }
-        }
-      }
+      this.collectNodeReferenceIds(node, referenced);
     }
 
     return referenced;
+  }
+
+  private collectNodeReferenceIds(node: JsonLdNode, referenced: Set<string>): void {
+    for (const key of Object.keys(node)) {
+      if (key === '@id' || key === '@type') continue;
+      this.collectPropertyReferenceIds(node[key] as JsonLdPropertyValue | undefined, referenced);
+    }
+  }
+
+  private collectPropertyReferenceIds(
+    values: JsonLdPropertyValue | undefined,
+    referenced: Set<string>,
+  ): void {
+    if (!Array.isArray(values)) return;
+
+    for (const value of values) {
+      if (!isJsonLdNode(value)) continue;
+      const id = value['@id'] as string | undefined;
+      if (id) referenced.add(id);
+    }
   }
 
   /**
@@ -202,6 +219,7 @@ export class DppRendererComponent implements OnChanges {
    *   substance         – hazardous-substance disclosure (SCIP/REACH)
    *   quantitative-property – measurements and environmental indicators
    *   document          – attached instructions, certificates, manuals
+  *   event             – product, passport, and technical lifecycle events
    *   lca               – derived lifecycle-assessment data (most technical)
    *   abstract          – catch-all for unmapped types
    */
@@ -214,8 +232,9 @@ export class DppRendererComponent implements OnChanges {
     'substance': 5,
     'quantitative-property': 6,
     'document': 7,
-    'lca': 8,
-    'abstract': 9,
+    'event': 8,
+    'lca': 9,
+    'abstract': 10,
   };
 
   private sortPriority(r: ResolvedNode): number {

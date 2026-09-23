@@ -19,15 +19,35 @@ import { CardModule } from 'primeng/card';
 import { DividerModule } from 'primeng/divider';
 import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
-import { EUDPP_NS } from '../../../common/cirpass-dpp-ontology';
-import { JsonLdNode, extractNodes, extractString, extractStrings, isIriOnlyRef } from '../../rendering-models';
+import { CLASS_LABELS, EUDPP_NS, SCHEMA_NS } from '../../../common/cirpass-dpp-ontology';
+import { JsonLdNode, extractNodes, extractPropertyUris, extractString, extractStrings, isIriOnlyRef } from '../../rendering-models';
+import { AbstractRendererComponent } from '../abstract-renderer/abstract-renderer.component';
 
 
 const NS = EUDPP_NS;
+const SCHEMA = SCHEMA_NS;
 
 interface RoleInfo {
   uri: string;
   label: string;
+}
+
+interface ContactInfo {
+  label: string;
+  value: string;
+  href: string;
+}
+
+interface RoleAssignmentInfo extends RoleInfo {
+  validFrom?: string;
+  validTo?: string;
+  representedManufacturer?: string;
+}
+
+interface RepresentativeMandateInfo {
+  representative: string;
+  validFrom?: string;
+  validTo?: string;
 }
 
 /**
@@ -36,7 +56,7 @@ interface RoleInfo {
  */
 @Component({
   selector: 'app-actor-renderer',
-  imports: [CardModule, DividerModule, TagModule, TooltipModule],
+  imports: [CardModule, DividerModule, TagModule, TooltipModule, AbstractRendererComponent],
   templateUrl: './actor-renderer.component.html',
   styleUrl: './actor-renderer.component.css'
 })
@@ -44,18 +64,21 @@ export class ActorRendererComponent implements OnChanges {
   @Input({ required: true }) node!: JsonLdNode;
   @Input() graph: Map<string, JsonLdNode> = new Map();
 
+  readonly identifierSkipUris = [`${NS}identifierValue`];
+
   private resolvedNode!: JsonLdNode;
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['node'] || changes['graph']) {
-      this.resolvedNode = this.resolve(this.node);
+      this.resolvedNode = this.resolve(this.node) ?? this.node;
     }
   }
 
   /**
    * If the input node is IRI-only, try to find the full node in the graph.
    */
-  private resolve(node: JsonLdNode): JsonLdNode {
+  private resolve(node: JsonLdNode | undefined): JsonLdNode | undefined {
+    if (!node) return undefined;
     if (isIriOnlyRef(node) && node['@id']) {
       return this.graph.get(node['@id'] as string) ?? node;
     }
@@ -93,9 +116,21 @@ export class ActorRendererComponent implements OnChanges {
     );
   }
 
+  get operatorIdentifier(): JsonLdNode | undefined {
+    return this.resolve(extractNodes(this.resolvedNode, `${NS}hasUniqueOperatorIdentifier`)[0]);
+  }
+
   /** Gets the unique operator identifier */
   get operatorId(): string | undefined {
-    return extractString(this.resolvedNode, `${NS}uniqueOperatorID`);
+    return this.operatorIdentifier
+      ? extractString(this.operatorIdentifier, `${NS}identifierValue`)
+      : undefined;
+  }
+
+  get identifierExtraUris(): string[] {
+    return this.operatorIdentifier
+      ? extractPropertyUris(this.operatorIdentifier).filter(uri => !this.identifierSkipUris.includes(uri))
+      : [];
   }
 
   /** Gets the registered trade name */
@@ -108,14 +143,36 @@ export class ActorRendererComponent implements OnChanges {
     return extractString(this.resolvedNode, `${NS}registeredTrademark`);
   }
 
-  /** Gets array of electronic contact information */
-  get contacts(): string[] {
-    return extractStrings(this.resolvedNode, `${NS}electronicContact`);
+  /** Gets the email, telephone, and website contact information */
+  get contacts(): ContactInfo[] {
+    return [
+      ...extractStrings(this.resolvedNode, `${SCHEMA}email`).map(value => ({
+        label: 'Email', value, href: `mailto:${value}`
+      })),
+      ...extractStrings(this.resolvedNode, `${SCHEMA}telephone`).map(value => ({
+        label: 'Telephone', value, href: `tel:${value}`
+      })),
+      ...extractStrings(this.resolvedNode, `${SCHEMA}url`).map(value => ({
+        label: 'Website', value, href: value
+      }))
+    ];
   }
 
   /** Gets the postal/physical address */
   get postalAddress(): string | undefined {
-    return extractString(this.resolvedNode, `${NS}postalAddress`);
+    const address = this.resolve(extractNodes(this.resolvedNode, `${SCHEMA}address`)[0]);
+    if (!address) return undefined;
+
+    const locality = [
+      extractString(address, `${SCHEMA}postalCode`),
+      extractString(address, `${SCHEMA}addressLocality`),
+    ].filter(Boolean).join(' ');
+    const formatted = [
+      extractString(address, `${SCHEMA}streetAddress`),
+      locality,
+      extractString(address, `${SCHEMA}addressCountry`),
+    ].filter(Boolean).join(', ');
+    return formatted || undefined;
   }
 
   /**
@@ -123,46 +180,86 @@ export class ActorRendererComponent implements OnChanges {
    * @returns Array of role information with URIs and human-readable labels
    */
   get roles(): RoleInfo[] {
-    const roleNodes = extractNodes(this.resolvedNode, `${NS}hasRole`);
-    return roleNodes.map(rn => {
-      const typeUri = ((rn['@type'] as string[]) ?? [])[0];
-      const id = rn['@id'] as string | undefined;
-      // Try to resolve the full node from graph for better type info
-      const full = (id ? this.graph.get(id) : undefined) ?? rn;
-      const fullType = ((full['@type'] as string[]) ?? [])[0] ?? typeUri;
-      return {
-        uri: fullType ?? id ?? '',
-        label: fullType
-          ? this.roleLabelFor(fullType)
-          : (id?.split('#').pop()?.split('/').pop() ?? 'Role'),
-      };
+    return this.roleAssignments.map(({ uri, label }) => ({ uri, label }));
+  }
+
+  get roleAssignments(): RoleAssignmentInfo[] {
+    return this.assignmentNodesForActor().flatMap(assignment =>
+      extractNodes(assignment, `${NS}hasRole`).flatMap(role => {
+        const resolvedRole = this.resolve(role);
+        if (!resolvedRole) return [];
+        const uri = (resolvedRole['@id'] as string | undefined) ??
+          ((resolvedRole['@type'] as string[] | undefined) ?? [])[0] ?? '';
+        const manufacturer = extractNodes(assignment, `${NS}representsManufacturer`)[0];
+        const resolvedManufacturer = manufacturer ? this.resolve(manufacturer) : undefined;
+
+        return [{
+          uri,
+          label: this.roleLabelFor(uri),
+          validFrom: extractString(assignment, `${NS}assignmentValidFrom`),
+          validTo: extractString(assignment, `${NS}assignmentValidTo`),
+          representedManufacturer: resolvedManufacturer
+            ? this.actorLabel(resolvedManufacturer)
+            : undefined,
+        }];
+      })
+    );
+  }
+
+  get roleAssignmentDetails(): RoleAssignmentInfo[] {
+    return this.roleAssignments.filter(assignment =>
+      assignment.validFrom || assignment.validTo || assignment.representedManufacturer
+    );
+  }
+
+  get representativeMandates(): RepresentativeMandateInfo[] {
+    const actorId = this.resolvedNode['@id'] as string | undefined;
+    if (!actorId) return [];
+
+    const directMandates = extractNodes(this.resolvedNode, `${NS}hasRepresentativeMandate`)
+      .map(mandate => this.resolve(mandate))
+      .filter((mandate): mandate is JsonLdNode => !!mandate);
+    const inverseMandates = Array.from(this.graph.values()).filter(assignment =>
+      extractNodes(assignment, `${NS}representsManufacturer`)
+        .some(manufacturer => manufacturer['@id'] === actorId)
+    );
+    const mandates = [...directMandates, ...inverseMandates].filter((mandate, index, all) => {
+      const id = mandate['@id'];
+      return !id || all.findIndex(candidate => candidate['@id'] === id) === index;
+    });
+
+    return mandates.flatMap(mandate => {
+      const representative = extractNodes(mandate, `${NS}hasActor`)[0];
+      if (!representative) return [];
+      const resolvedRepresentative = this.resolve(representative);
+      if (!resolvedRepresentative) return [];
+
+      return [{
+        representative: this.actorLabel(resolvedRepresentative),
+        validFrom: extractString(mandate, `${NS}assignmentValidFrom`),
+        validTo: extractString(mandate, `${NS}assignmentValidTo`),
+      }];
     });
   }
 
   private roleLabelFor(typeUri: string): string {
-    const map: Record<string, string> = {
-      [`${NS}ManufacturerRole`]: 'Manufacturer',
-      [`${NS}ImporterRole`]: 'Importer',
-      [`${NS}DistributorRole`]: 'Distributor',
-      [`${NS}DealerRole`]: 'Dealer',
-      [`${NS}AuthorisedRepresentativeRole`]: 'Auth. Representative',
-      [`${NS}FulfilmentServiceProviderRole`]: 'Fulfilment Provider',
-      [`${NS}DPPServiceProviderRole`]: 'DPP Provider',
-      [`${NS}RecyclerRole`]: 'Recycler',
-      [`${NS}RefurbisherRole`]: 'Refurbisher',
-      [`${NS}RemanufacturerRole`]: 'Remanufacturer',
-      [`${NS}ProfessionalRepairerRole`]: 'Professional Repairer',
-      [`${NS}IndependentOperatorRole`]: 'Independent Operator',
-      [`${NS}ConsumerRole`]: 'Consumer',
-      [`${NS}EndUserRole`]: 'End User',
-      [`${NS}IssuingAgencyRole`]: 'Issuing Agency',
-      [`${NS}CredentialAgencyRole`]: 'Credential Agency',
-      [`${NS}CustomsAuthorityRole`]: 'Customs Authority',
-      [`${NS}MarketSurveillanceAuthorityRole`]: 'Market Surveillance',
-      [`${NS}NotifiedBodyRole`]: 'Notified Body',
-      [`${NS}ConformityAssessmentBodyRole`]: 'Conformity Assessment',
-    };
-    return map[typeUri] ?? typeUri.split('#').pop() ?? typeUri;
+    return CLASS_LABELS[typeUri] ?? typeUri.split('#').pop() ?? 'Role';
+  }
+
+  private assignmentNodesForActor(): JsonLdNode[] {
+    const actorId = this.resolvedNode['@id'] as string | undefined;
+    if (!actorId) return [];
+
+    return Array.from(this.graph.values()).filter(assignment =>
+      extractNodes(assignment, `${NS}hasActor`).some(actor => actor['@id'] === actorId)
+    );
+  }
+
+  private actorLabel(actor: JsonLdNode): string {
+    return extractString(actor, `${NS}actorName`) ??
+      extractString(actor, `${NS}registeredTradeName`) ??
+      (actor['@id'] as string | undefined) ??
+      'Actor';
   }
 
   /**
@@ -184,10 +281,15 @@ export class ActorRendererComponent implements OnChanges {
    */
   facilityLabel(fac: JsonLdNode): string {
     return (
-      extractString(fac, `${NS}uniqueFacilityID`) ??
+      this.identifierValue(fac, `${NS}hasUniqueFacilityIdentifier`) ??
       (fac['@id'] as string | undefined) ??
       'Facility'
     );
+  }
+
+  private identifierValue(node: JsonLdNode, propertyUri: string): string | undefined {
+    const identifier = this.resolve(extractNodes(node, propertyUri)[0]);
+    return identifier ? extractString(identifier, `${NS}identifierValue`) : undefined;
   }
 
   /**

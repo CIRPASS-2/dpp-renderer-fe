@@ -36,6 +36,7 @@ interface FieldRow {
 interface FieldValue {
   kind: 'literal' | 'node' | 'iri' | 'ref';
   text: string;
+  label?: string;
   refLabel?: string;
   node?: JsonLdNode;
 }
@@ -81,6 +82,10 @@ export class AbstractRendererComponent implements OnChanges {
    */
   get fields(): FieldRow[] {
     return this._fields;
+  }
+
+  get hasRenderableFields(): boolean {
+    return this._fields.some(field => !this.skip(field));
   }
 
   /**
@@ -150,7 +155,12 @@ export class AbstractRendererComponent implements OnChanges {
           }
 
           if (isIriOnlyRef(resolved)) {
-            return { kind: 'iri', text: id ?? '', node: resolved };
+            return {
+              kind: 'iri',
+              text: id ?? '',
+              label: id ? this.registry.getLabel(id) : undefined,
+              node: resolved,
+            };
           }
 
           return { kind: 'node', text: id ?? '', node: resolved };

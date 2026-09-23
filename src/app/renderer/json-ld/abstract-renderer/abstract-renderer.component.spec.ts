@@ -95,4 +95,34 @@ describe('AbstractRendererComponent', () => {
     const visited = component.childVisited(childNode);
     expect(visited.has('https://example.com/abstract/123')).toBe(true);
   });
+
+  it('should display a registry label for an IRI-only controlled value', () => {
+    const controlledValueUri = 'https://w3id.org/eudpp#available';
+    ontologyRegistryServiceSpy.getLabel.withArgs(controlledValueUri).and.returnValue('Available');
+    component.node = {
+      '@id': 'https://example.com/abstract/controlled-value',
+      'https://w3id.org/eudpp#hasDisposition': [{ '@id': controlledValueUri }]
+    };
+    component.graph = new Map();
+    component.ngOnChanges();
+    fixture.detectChanges();
+
+    const link = fixture.nativeElement.querySelector('.abstract-iri') as HTMLAnchorElement;
+    expect(link.getAttribute('href')).toBe(controlledValueUri);
+    expect(link.textContent?.trim()).toBe('Available');
+  });
+
+  it('should not render a box when all fields are skipped', () => {
+    component.skipUris = [
+      'https://w3id.org/eudpp#minValue',
+      'https://w3id.org/eudpp#maxValue',
+      'https://w3id.org/eudpp#measurementUnit',
+      'https://w3id.org/eudpp#category'
+    ];
+    component.ngOnChanges();
+    fixture.detectChanges();
+
+    expect(component.hasRenderableFields).toBe(false);
+    expect(fixture.nativeElement.querySelector('.abstract-fieldset')).toBeNull();
+  });
 });
