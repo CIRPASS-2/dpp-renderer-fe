@@ -17,7 +17,7 @@
 import { SimpleChange } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideNoopAnimations } from '@angular/platform-browser/animations';
-import { RenderCategory } from '../../../common/cirpass-dpp-ontology';
+import { EUDPP_NS, RenderCategory } from '../../../common/cirpass-dpp-ontology';
 import { ExpandedJsonLd, JsonLdNode } from '../../rendering-models';
 import { OntologyRegistryService } from '../ontology-registry.service';
 import { DppRendererComponent, ResolvedNode } from './dpp-renderer.component';
@@ -26,6 +26,8 @@ describe('DppRendererComponent', () => {
   let component: DppRendererComponent;
   let fixture: ComponentFixture<DppRendererComponent>;
   let ontologyRegistryServiceSpy: jasmine.SpyObj<OntologyRegistryService>;
+
+  const NS = EUDPP_NS;
 
   const mockProductNode: JsonLdNode = {
     '@id': 'https://example.com/product/123',
@@ -58,6 +60,24 @@ describe('DppRendererComponent', () => {
   const mockRoleNode: JsonLdNode = {
     '@id': 'https://example.com/role/manufacturer',
     '@type': ['http://example.com/ManufacturerRole']
+  };
+
+  const mockLcaStudyNode: JsonLdNode = {
+    '@id': 'https://example.com/lca/studies/123',
+    '@type': [`${NS}LCAStudy`],
+    [`${NS}hasLCIAResult`]: [{ '@id': 'https://example.com/lca/results/climate-change' }]
+  };
+
+  const mockLcaResultNode: JsonLdNode = {
+    '@id': 'https://example.com/lca/results/climate-change',
+    '@type': [`${NS}LCIAResult`],
+    [`${NS}hasModuleValue`]: [{ '@id': 'https://example.com/lca/module-values/a1-a3' }]
+  };
+
+  const mockEventNode: JsonLdNode = {
+    '@id': 'https://example.com/events/transformation-1',
+    '@type': [`${NS}TransformationEvent`],
+    [`${NS}eventTime`]: [{ '@value': '2026-03-06T10:00:00Z' }]
   };
 
   const mockIriOnlyNode: JsonLdNode = {
@@ -103,6 +123,8 @@ describe('DppRendererComponent', () => {
       if (types.includes('http://example.com/Actor')) return 'actor';
       if (types.includes('http://example.com/Concentration')) return 'abstract';
       if (types.includes('http://example.com/ManufacturerRole')) return 'abstract';
+      if (types.includes(`${NS}LCAStudy`) || types.includes(`${NS}LCIAResult`)) return 'lca';
+      if (types.includes(`${NS}TransformationEvent`)) return 'event';
       return 'abstract';
     });
   });
@@ -250,6 +272,39 @@ describe('DppRendererComponent', () => {
       expect(abstractResolved).toBeUndefined();
     });
 
+    it('should not render actor role assignment nodes as standalone cards', () => {
+      const roleAssignment: JsonLdNode = {
+        '@id': 'https://example.com/assignments/manufacturer',
+        '@type': [`${NS}ActorRoleAssignment`],
+        [`${NS}hasActor`]: [{ '@id': mockActorNode['@id'] as string }],
+        [`${NS}hasRole`]: [{ '@id': `${NS}manufacturer` }]
+      };
+      const testData = [mockActorNode, roleAssignment];
+      component.expandedJsonLd = testData;
+
+      component.ngOnChanges({
+        expandedJsonLd: new SimpleChange(null, testData, true)
+      });
+
+      expect(component.resolvedNodes.some(
+        resolved => resolved.node['@id'] === roleAssignment['@id']
+      )).toBeFalse();
+    });
+
+    it('should not duplicate a result rendered by its LCA study', () => {
+      const testData = [mockLcaStudyNode, mockLcaResultNode];
+      component.expandedJsonLd = testData;
+
+      component.ngOnChanges({
+        expandedJsonLd: new SimpleChange(null, testData, true)
+      });
+
+      expect(component.resolvedNodes).toEqual([{
+        node: mockLcaStudyNode,
+        category: 'lca'
+      }]);
+    });
+
     it('should include known category nodes even if referenced', () => {
       // Product node should be included even if referenced by DPP
       component.ngOnChanges({
@@ -261,6 +316,20 @@ describe('DppRendererComponent', () => {
       );
       expect(productResolved).toBeDefined();
       expect(productResolved?.category).toBe('product');
+    });
+
+    it('should render current event carriers as top-level event nodes', () => {
+      const testData = [mockEventNode];
+      component.expandedJsonLd = testData;
+
+      component.ngOnChanges({
+        expandedJsonLd: new SimpleChange(null, testData, true)
+      });
+
+      expect(component.resolvedNodes).toEqual([{
+        node: mockEventNode,
+        category: 'event'
+      }]);
     });
 
     it('should sort nodes by category priority', () => {
@@ -366,8 +435,9 @@ describe('DppRendererComponent', () => {
         ['substance', 5],
         ['quantitative-property', 6],
         ['document', 7],
-        ['lca', 8],
-        ['abstract', 9]
+        ['event', 8],
+        ['lca', 9],
+        ['abstract', 10]
       ];
 
       testCases.forEach(([category, expectedPriority]) => {
@@ -404,6 +474,7 @@ describe('DppRendererComponent', () => {
       expect(categoryOrder['substance']).toBeDefined();
       expect(categoryOrder['quantitative-property']).toBeDefined();
       expect(categoryOrder['document']).toBeDefined();
+      expect(categoryOrder['event']).toBeDefined();
       expect(categoryOrder['lca']).toBeDefined();
       expect(categoryOrder['abstract']).toBeDefined();
     });
@@ -414,7 +485,7 @@ describe('DppRendererComponent', () => {
       expect(categoryOrder['product']).toBeLessThan(categoryOrder['dpp']);
       expect(categoryOrder['dpp']).toBeLessThan(categoryOrder['actor']);
       expect(categoryOrder['actor']).toBeLessThan(categoryOrder['facility']);
-      expect(categoryOrder['abstract']).toBe(9); // Should be last
+      expect(categoryOrder['abstract']).toBe(10); // Should be last
     });
   });
 
@@ -462,7 +533,7 @@ describe('DppRendererComponent', () => {
       });
 
       expect(component.graph.size).toBe(0);
-      expect(component.resolvedNodes.length).toBe(1);
+      expect(component.resolvedNodes).toHaveSize(1);
       expect(component.error).toBeUndefined();
     });
 
@@ -480,7 +551,7 @@ describe('DppRendererComponent', () => {
       });
 
       expect(ontologyRegistryServiceSpy.resolveCategory).toHaveBeenCalledWith([]);
-      expect(component.resolvedNodes.length).toBe(1);
+      expect(component.resolvedNodes).toHaveSize(1);
     });
 
     it('should handle complex nested property structures', () => {

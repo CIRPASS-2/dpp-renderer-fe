@@ -14,6 +14,7 @@
   limitations under the License.
 -->
 
+@if (hasRenderableFields) {
 <fieldset class="abstract-fieldset">
   <legend class="abstract-legend">{{ legend }}</legend>
   @for (field of fields; track field.label) {
@@ -25,7 +26,7 @@
       @if (v.kind === 'literal') {
       <span class="abstract-literal">{{ v.text }}</span>
       } @else if (v.kind === 'iri') {
-      <a [href]="v.text" target="_blank" rel="noopener" class="abstract-iri">{{ v.text }}</a>
+      <a [href]="v.text" target="_blank" rel="noopener" class="abstract-iri">{{ v.label ?? v.text }}</a>
       } @else if (v.node && !isIriOnly(v.node)) {
       <div class="abstract-nested">
         <app-abstract-renderer [node]="v.node" [graph]="graph" [visited]="childVisited(v.node)" />
@@ -39,3 +40,4 @@
   }
   }
 </fieldset>
+}

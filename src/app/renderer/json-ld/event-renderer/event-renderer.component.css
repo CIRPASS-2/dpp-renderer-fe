@@ -1,0 +1,26 @@
+/*
+ * Copyright 2024-2027 CIRPASS-2
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+.event-card { border-left: 4px solid #0f766e; }
+.event-title-row { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
+.event-id { font-size: 0.75rem; background: #f0fdfa; padding: 0.1rem 0.4rem; border-radius: 4px; color: #115e59; }
+.event-fields { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.6rem; }
+.field-item { display: flex; flex-direction: column; gap: 0.15rem; }
+.field-label { font-size: 0.72rem; font-weight: 600; color: #6c757d; text-transform: uppercase; letter-spacing: 0.05em; }
+.field-values { display: flex; flex-direction: column; gap: 0.1rem; }
+.field-value { font-size: 0.9rem; color: #212529; }
+.field-link, .event-iri { font-size: 0.9rem; color: #0f766e; word-break: break-all; }
+.event-iri { font-size: 0.75rem; }

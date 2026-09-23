@@ -88,7 +88,7 @@
     <div class="sub-section-label">Concentration</div>
     <div class="sub-qp-grid">
       @for (cn of concentrationNodes; track $index) {
-      <app-quantitative-property-renderer [node]="cn" />
+      <app-quantitative-property-renderer [node]="cn" [graph]="graph" />
       }
     </div>
     }
@@ -97,7 +97,7 @@
     <div class="sub-section-label" style="margin-top:.75rem">Threshold</div>
     <div class="sub-qp-grid">
       @for (tn of thresholdNodes; track $index) {
-      <app-quantitative-property-renderer [node]="tn" />
+      <app-quantitative-property-renderer [node]="tn" [graph]="graph" />
       }
     </div>
     }

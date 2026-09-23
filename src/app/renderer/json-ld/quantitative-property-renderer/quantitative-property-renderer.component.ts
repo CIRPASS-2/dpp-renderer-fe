@@ -20,6 +20,7 @@ import { extractNodes, extractNumber, extractString, JsonLdNode } from '../../re
 import { OntologyRegistryService } from '../ontology-registry.service';
 
 const NS = EUDPP_NS;
+const RDFS_LABEL = 'http://www.w3.org/2000/01/rdf-schema#label';
 
 /**
  * Component for rendering quantitative property measurements with units and tolerances.
@@ -33,6 +34,7 @@ const NS = EUDPP_NS;
 })
 export class QuantitativePropertyRendererComponent {
   @Input({ required: true }) node!: JsonLdNode;
+  @Input() graph: Map<string, JsonLdNode> = new Map();
 
   constructor(private registry: OntologyRegistryService) { }
 
@@ -62,7 +64,12 @@ export class QuantitativePropertyRendererComponent {
   get unit(): string | undefined {
     const unitNodes = extractNodes(this.node, `${NS}hasMeasurementUnit`);
     if (unitNodes.length > 0) {
-      return extractString(unitNodes[0], `${NS}value`) ?? unitNodes[0]['@id'] as string | undefined;
+      const unit = this.resolveNode(unitNodes[0]);
+      return unit
+        ? extractString(unit, `${NS}value`) ??
+          extractString(unit, RDFS_LABEL) ??
+          unit['@id'] as string | undefined
+        : undefined;
     }
     return undefined;
   }
@@ -97,6 +104,11 @@ export class QuantitativePropertyRendererComponent {
     if (types.some(t => t.includes('Quality') || t.includes('Durability') || t.includes('Reliability')))
       return 'cat-quality';
     return 'cat-default';
+  }
+
+  private resolveNode(node: JsonLdNode): JsonLdNode {
+    const id = node['@id'] as string | undefined;
+    return id ? this.graph.get(id) ?? node : node;
   }
 }
 

@@ -29,6 +29,9 @@
 
     .actor-roles  { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.75rem; }
     ::ng-deep .role-tag .p-tag { font-size: 0.72rem; }
+    .actor-role-details { display: flex; flex-direction: column; gap: 0.35rem; margin-bottom: 0.75rem; }
+    .role-detail { display: flex; flex-wrap: wrap; gap: 0.4rem 0.75rem; font-size: 0.82rem; color: #495057; }
+    .role-detail-name { font-weight: 600; color: #212529; }
 
     .actor-fields { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.6rem; }
     .field-item   { display: flex; flex-direction: column; gap: 0.15rem; }
@@ -40,5 +43,7 @@
     .facilities-list { display: flex; flex-direction: column; gap: 0.4rem; }
     .facility-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; }
     .facility-icon { font-size: 1rem; }
+    .representative-mandates { display: flex; flex-direction: column; gap: 0.35rem; }
+    .mandate-item { display: flex; flex-wrap: wrap; gap: 0.4rem 0.75rem; font-size: 0.9rem; }
 
     .actor-iri-footer { font-size: 0.75rem; color: #6366f1; word-break: break-all; }

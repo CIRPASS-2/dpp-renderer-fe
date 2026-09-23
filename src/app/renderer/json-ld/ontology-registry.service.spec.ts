@@ -43,6 +43,11 @@ describe('OntologyRegistryService', () => {
       expect(result).toBe('quantitative-property');
     });
 
+    it('should resolve a technical event carrier to the event category', () => {
+      const result = service.resolveCategory(['https://w3id.org/eudpp#TransformationEvent']);
+      expect(result).toBe('event');
+    });
+
     it('should return "abstract" when no category is found', () => {
       const unknownTypes = ['https://unknown.com/UnknownType'];
       const result = service.resolveCategory(unknownTypes);
@@ -135,15 +140,26 @@ describe('OntologyRegistryService', () => {
 
   describe('getLabel', () => {
     it('should return property label when available', () => {
-      const propertyUri = 'https://w3id.org/eudpp#uniqueProductID';
+      const propertyUri = 'https://w3id.org/eudpp#hasUniqueProductIdentifier';
       const label = service.getLabel(propertyUri);
-      expect(label).toBe('Unique Product ID');
+      expect(label).toBe('Product Identifier');
     });
 
     it('should return class label when available', () => {
       const classUri = 'https://w3id.org/eudpp#Product';
       const label = service.getLabel(classUri);
       expect(label).toBe('Product');
+    });
+
+    it('should return labels for current EVENT, IDENT, ACTOR, and P_DPP terms', () => {
+      expect(service.getLabel('https://w3id.org/eudpp#eventTime')).toBe('Event Time');
+      expect(service.getLabel('https://w3id.org/eudpp#hasRepresentativeMandate')).toBe('Representative Mandate');
+      expect(service.getLabel('https://w3id.org/eudpp#identifierPattern')).toBe('Identifier Pattern');
+      expect(service.getLabel('https://w3id.org/eudpp#manufacturingDate')).toBe('Manufacturing Date');
+      expect(service.getLabel('https://w3id.org/eudpp#TransformationEvent')).toBe('Transformation Event');
+      expect(service.getLabel('https://w3id.org/eudpp#ADD')).toBe('ADD');
+      expect(service.getLabel('https://w3id.org/eudpp#hasComplianceDeclaration')).toBe('Compliance Declaration');
+      expect(service.getLabel('https://w3id.org/eudpp#moduleA1A3')).toBe('A1-A3 - Product Stage');
     });
 
     it('should return formatted local name when no label exists', () => {

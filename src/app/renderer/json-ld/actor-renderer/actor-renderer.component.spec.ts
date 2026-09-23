@@ -21,26 +21,28 @@ import { JsonLdNode } from '../../rendering-models';
 import { ActorRendererComponent } from './actor-renderer.component';
 
 const NS = EUDPP_NS;
+const SCHEMA = 'https://schema.org/';
 
 describe('ActorRendererComponent', () => {
   let component: ActorRendererComponent;
   let fixture: ComponentFixture<ActorRendererComponent>;
 
+  const actorIdentifierId = 'https://example.com/identifiers/actor-123';
+  const facilityIdentifierId = 'https://example.com/identifiers/facility-main';
+  const secondaryFacilityIdentifierId = 'https://example.com/identifiers/facility-secondary';
+
   const mockActorNode: JsonLdNode = {
     '@id': 'https://example.com/actor/123',
     '@type': [`${NS}LegalPerson`],
     [`${NS}actorName`]: [{ '@value': 'Example Corporation' }],
-    [`${NS}uniqueOperatorID`]: [{ '@value': 'OP-123456' }],
+    [`${NS}hasUniqueOperatorIdentifier`]: [{ '@id': actorIdentifierId }],
     [`${NS}registeredTradeName`]: [{ '@value': 'ExampleCorp' }],
     [`${NS}registeredTrademark`]: [{ '@value': 'ExampleTM' }],
-    [`${NS}electronicContact`]: [
-      { '@value': 'contact@example.com' },
-      { '@value': '+1-234-567-8900' }
-    ],
-    [`${NS}postalAddress`]: [{ '@value': '123 Business St, City, State 12345' }],
-    [`${NS}hasRole`]: [
-      { '@type': [`${NS}ManufacturerRole`], '@id': 'https://example.com/role/manufacturer' }
-    ],
+    [`${SCHEMA}email`]: [{ '@value': 'contact@example.com' }],
+    [`${SCHEMA}telephone`]: [{ '@value': '+1-234-567-8900' }],
+    [`${SCHEMA}url`]: [{ '@value': 'https://example.com' }],
+    [`${SCHEMA}address`]: [{ '@id': 'https://example.com/address/actor-123' }],
+    [`${NS}hasRepresentativeMandate`]: [{ '@id': 'https://example.com/assignments/representative' }],
     [`${NS}usesFacility`]: [
       { '@id': 'https://example.com/facility/main' }
     ]
@@ -59,28 +61,76 @@ describe('ActorRendererComponent', () => {
   const mockFacilityNode: JsonLdNode = {
     '@id': 'https://example.com/facility/main',
     '@type': [`${NS}Facility`],
-    [`${NS}uniqueFacilityID`]: [{ '@value': 'FAC-MAIN-001' }],
-    [`${NS}postalAddress`]: [{ '@value': '456 Industrial Ave, Manufacturing District' }]
+    [`${NS}hasUniqueFacilityIdentifier`]: [{ '@id': facilityIdentifierId }]
   };
 
   const mockSecondaryFacilityNode: JsonLdNode = {
     '@id': 'https://example.com/facility/secondary',
     '@type': [`${NS}Facility`],
-    [`${NS}uniqueFacilityID`]: [{ '@value': 'FAC-SEC-002' }]
+    [`${NS}hasUniqueFacilityIdentifier`]: [{ '@id': secondaryFacilityIdentifierId }]
   };
 
   const mockGraph = new Map<string, JsonLdNode>([
+    [actorIdentifierId, {
+      '@id': actorIdentifierId,
+      '@type': [`${NS}ActorIdentifier`],
+      [`${NS}identifierValue`]: [{ '@value': 'OP-123456' }],
+      [`${NS}hasScheme`]: [{ '@id': 'https://example.com/schemes/gln' }],
+      [`${NS}identifierIssuedOn`]: [{ '@value': '2026-03-01' }],
+      [`${NS}identifierExpiresOn`]: [{ '@value': '2031-03-01' }]
+    }],
+    ['https://example.com/schemes/gln', {
+      '@id': 'https://example.com/schemes/gln',
+      '@type': [`${NS}ActorIdentifierScheme`],
+      'http://www.w3.org/2000/01/rdf-schema#label': [{ '@value': 'GLN' }]
+    }],
+    [facilityIdentifierId, {
+      '@id': facilityIdentifierId,
+      '@type': [`${NS}FacilityIdentifier`],
+      [`${NS}identifierValue`]: [{ '@value': 'FAC-MAIN-001' }]
+    }],
+    [secondaryFacilityIdentifierId, {
+      '@id': secondaryFacilityIdentifierId,
+      '@type': [`${NS}FacilityIdentifier`],
+      [`${NS}identifierValue`]: [{ '@value': 'FAC-SEC-002' }]
+    }],
+    ['https://example.com/address/actor-123', {
+      '@id': 'https://example.com/address/actor-123',
+      '@type': [`${SCHEMA}PostalAddress`],
+      [`${SCHEMA}streetAddress`]: [{ '@value': '123 Business St' }],
+      [`${SCHEMA}postalCode`]: [{ '@value': '12345' }],
+      [`${SCHEMA}addressLocality`]: [{ '@value': 'City' }],
+      [`${SCHEMA}addressCountry`]: [{ '@value': 'US' }]
+    }],
     ['https://example.com/actor/456', {
       '@id': 'https://example.com/actor/456',
       '@type': [`${NS}LegalPerson`],
       [`${NS}registeredTradeName`]: [{ '@value': 'Resolved Company' }],
-      [`${NS}uniqueOperatorID`]: [{ '@value': 'OP-RESOLVED-789' }]
+      [`${NS}hasUniqueOperatorIdentifier`]: [{ '@id': actorIdentifierId }]
     }],
     ['https://example.com/facility/main', mockFacilityNode],
     ['https://example.com/facility/secondary', mockSecondaryFacilityNode],
-    ['https://example.com/role/manufacturer', {
-      '@id': 'https://example.com/role/manufacturer',
-      '@type': [`${NS}ManufacturerRole`]
+    ['https://example.com/assignments/manufacturer', {
+      '@id': 'https://example.com/assignments/manufacturer',
+      '@type': [`${NS}ActorRoleAssignment`],
+      [`${NS}hasActor`]: [{ '@id': 'https://example.com/actor/123' }],
+      [`${NS}hasRole`]: [{ '@id': `${NS}manufacturer` }],
+      [`${NS}assignmentValidFrom`]: [{ '@value': '2026-01-01T00:00:00Z' }],
+      [`${NS}assignmentValidTo`]: [{ '@value': '2027-01-01T00:00:00Z' }]
+    }],
+    ['https://example.com/actor/representative', {
+      '@id': 'https://example.com/actor/representative',
+      '@type': [`${NS}LegalPerson`],
+      [`${NS}actorName`]: [{ '@value': 'EU Representative GmbH' }]
+    }],
+    ['https://example.com/assignments/representative', {
+      '@id': 'https://example.com/assignments/representative',
+      '@type': [`${NS}AuthorisedRepresentativeRoleAssignment`],
+      [`${NS}hasActor`]: [{ '@id': 'https://example.com/actor/representative' }],
+      [`${NS}hasRole`]: [{ '@id': `${NS}authorisedRepresentative` }],
+      [`${NS}representsManufacturer`]: [{ '@id': 'https://example.com/actor/123' }],
+      [`${NS}assignmentValidFrom`]: [{ '@value': '2026-01-01T00:00:00Z' }],
+      [`${NS}assignmentValidTo`]: [{ '@value': '2027-01-01T00:00:00Z' }]
     }]
   ]);
 
@@ -155,6 +205,10 @@ describe('ActorRendererComponent', () => {
       const nodeWithoutId = { '@type': ['SomeType'] };
       const result = (component as any).resolve(nodeWithoutId);
       expect(result).toBe(nodeWithoutId);
+    });
+
+    it('should return undefined when no node is provided', () => {
+      expect((component as any).resolve(undefined)).toBeUndefined();
     });
   });
 
@@ -250,13 +304,23 @@ describe('ActorRendererComponent', () => {
 
       it('should return undefined when not available', () => {
         const nodeWithoutOperatorId = { ...mockActorNode };
-        delete nodeWithoutOperatorId[`${NS}uniqueOperatorID`];
+        delete nodeWithoutOperatorId[`${NS}hasUniqueOperatorIdentifier`];
         component.node = nodeWithoutOperatorId;
         component.ngOnChanges({
           node: new SimpleChange(null, nodeWithoutOperatorId, false)
         });
 
         expect(component.operatorId).toBeUndefined();
+      });
+    });
+
+    describe('identifier metadata', () => {
+      it('should retain scheme and validity metadata from the referenced identifier', () => {
+        expect(component.identifierExtraUris).toEqual([
+          `${NS}hasScheme`,
+          `${NS}identifierIssuedOn`,
+          `${NS}identifierExpiresOn`,
+        ]);
       });
     });
 
@@ -295,13 +359,19 @@ describe('ActorRendererComponent', () => {
     });
 
     describe('contacts', () => {
-      it('should return all electronic contacts', () => {
-        expect(component.contacts).toEqual(['contact@example.com', '+1-234-567-8900']);
+      it('should return schema.org email, telephone, and website contacts', () => {
+        expect(component.contacts).toEqual([
+          { label: 'Email', value: 'contact@example.com', href: 'mailto:contact@example.com' },
+          { label: 'Telephone', value: '+1-234-567-8900', href: 'tel:+1-234-567-8900' },
+          { label: 'Website', value: 'https://example.com', href: 'https://example.com' }
+        ]);
       });
 
       it('should return empty array when no contacts', () => {
         const nodeWithoutContacts = { ...mockActorNode };
-        delete nodeWithoutContacts[`${NS}electronicContact`];
+        delete nodeWithoutContacts[`${SCHEMA}email`];
+        delete nodeWithoutContacts[`${SCHEMA}telephone`];
+        delete nodeWithoutContacts[`${SCHEMA}url`];
         component.node = nodeWithoutContacts;
         component.ngOnChanges({
           node: new SimpleChange(null, nodeWithoutContacts, false)
@@ -313,12 +383,12 @@ describe('ActorRendererComponent', () => {
 
     describe('postalAddress', () => {
       it('should return postal address when available', () => {
-        expect(component.postalAddress).toBe('123 Business St, City, State 12345');
+        expect(component.postalAddress).toBe('123 Business St, 12345 City, US');
       });
 
       it('should return undefined when not available', () => {
         const nodeWithoutAddress = { ...mockActorNode };
-        delete nodeWithoutAddress[`${NS}postalAddress`];
+        delete nodeWithoutAddress[`${SCHEMA}address`];
         component.node = nodeWithoutAddress;
         component.ngOnChanges({
           node: new SimpleChange(null, nodeWithoutAddress, false)
@@ -329,122 +399,73 @@ describe('ActorRendererComponent', () => {
     });
 
     describe('roles', () => {
-      it('should return formatted roles with correct labels from ontology', () => {
+      it('should return the current role from an actor role assignment in the graph', () => {
         const roles = component.roles;
-        expect(roles.length).toBe(1);
+        expect(roles).toHaveSize(1);
         expect(roles[0].label).toBe('Manufacturer');
-        expect(roles[0].uri).toBe(`${NS}ManufacturerRole`);
+        expect(roles[0].uri).toBe(`${NS}manufacturer`);
       });
 
-      it('should handle multiple real ontology roles', () => {
-        const nodeWithMultipleRoles = {
-          ...mockActorNode,
-          [`${NS}hasRole`]: [
-            { '@type': [`${NS}ManufacturerRole`], '@id': 'https://example.com/role/manufacturer' },
-            { '@type': [`${NS}ImporterRole`], '@id': 'https://example.com/role/importer' },
-            { '@type': [`${NS}CustomsAuthorityRole`], '@id': 'https://example.com/role/customs' }
-          ]
-        };
-        component.node = nodeWithMultipleRoles;
-        component.ngOnChanges({
-          node: new SimpleChange(null, nodeWithMultipleRoles, false)
-        });
-
-        const roles = component.roles;
-        expect(roles.length).toBe(3);
-        expect(roles[0].label).toBe('Manufacturer');
-        expect(roles[1].label).toBe('Importer');
-        expect(roles[2].label).toBe('Customs Authority');
-      });
-
-      it('should resolve role type from graph when available', () => {
+      it('should collect multiple assignments for the same actor', () => {
         const enhancedGraph = new Map(mockGraph);
-        enhancedGraph.set('https://example.com/role/detailed', {
-          '@id': 'https://example.com/role/detailed',
-          '@type': [`${NS}DistributorRole`]
+        enhancedGraph.set('https://example.com/assignments/importer', {
+          '@id': 'https://example.com/assignments/importer',
+          '@type': [`${NS}ActorRoleAssignment`],
+          [`${NS}hasActor`]: [{ '@id': 'https://example.com/actor/123' }],
+          [`${NS}hasRole`]: [{ '@id': `${NS}importer` }]
         });
-
-        const nodeWithGraphRole = {
-          ...mockActorNode,
-          [`${NS}hasRole`]: [
-            { '@id': 'https://example.com/role/detailed' }
-          ]
-        };
         component.graph = enhancedGraph;
-        component.node = nodeWithGraphRole;
         component.ngOnChanges({
-          node: new SimpleChange(null, nodeWithGraphRole, false),
           graph: new SimpleChange(null, enhancedGraph, false)
         });
 
         const roles = component.roles;
-        expect(roles[0].label).toBe('Distributor');
-        expect(roles[0].uri).toBe(`${NS}DistributorRole`);
+        expect(roles.map(role => role.label)).toEqual(['Manufacturer', 'Importer']);
       });
 
-      it('should handle roles without full type resolution', () => {
-        const nodeWithUnknownRole = {
-          ...mockActorNode,
-          [`${NS}hasRole`]: [{ '@type': [`${NS}UnknownRole`] }]
-        };
-        component.node = nodeWithUnknownRole;
+      it('should ignore assignments for other actors', () => {
+        const graphWithOtherActor = new Map(mockGraph);
+        graphWithOtherActor.set('https://example.com/assignments/other', {
+          '@id': 'https://example.com/assignments/other',
+          '@type': [`${NS}ActorRoleAssignment`],
+          [`${NS}hasActor`]: [{ '@id': 'https://example.com/actor/other' }],
+          [`${NS}hasRole`]: [{ '@id': `${NS}distributor` }]
+        });
+        component.graph = graphWithOtherActor;
         component.ngOnChanges({
-          node: new SimpleChange(null, nodeWithUnknownRole, false)
+          graph: new SimpleChange(null, graphWithOtherActor, false)
         });
 
-        const roles = component.roles;
-        expect(roles[0].label).toBe('UnknownRole');
+        expect(component.roles).toEqual([{ uri: `${NS}manufacturer`, label: 'Manufacturer' }]);
       });
+    });
 
-      it('should fallback to IRI fragment when no type is available', () => {
-        const nodeWithIriOnlyRole = {
-          ...mockActorNode,
-          [`${NS}hasRole`]: [{ '@id': 'https://example.com/roles#SpecialRole' }]
-        };
-        component.node = nodeWithIriOnlyRole;
-        component.ngOnChanges({
-          node: new SimpleChange(null, nodeWithIriOnlyRole, false)
-        });
-
-        const roles = component.roles;
-        expect(roles[0].label).toBe('SpecialRole');
-        expect(roles[0].uri).toBe('https://example.com/roles#SpecialRole');
+    describe('role assignment details', () => {
+      it('should retain role assignment validity dates', () => {
+        expect(component.roleAssignmentDetails).toEqual([{
+          uri: `${NS}manufacturer`,
+          label: 'Manufacturer',
+          validFrom: '2026-01-01T00:00:00Z',
+          validTo: '2027-01-01T00:00:00Z',
+          representedManufacturer: undefined,
+        }]);
       });
+    });
 
-      it('should handle authority roles with correct labels', () => {
-        const nodeWithAuthorityRole = {
-          ...mockActorNode,
-          [`${NS}hasRole`]: [
-            { '@type': [`${NS}MarketSurveillanceAuthorityRole`] },
-            { '@type': [`${NS}NotifiedBodyRole`] }
-          ]
-        };
-        component.node = nodeWithAuthorityRole;
-        component.ngOnChanges({
-          node: new SimpleChange(null, nodeWithAuthorityRole, false)
-        });
-
-        const roles = component.roles;
-        expect(roles[0].label).toBe('Market Surveillance');
-        expect(roles[1].label).toBe('Notified Body');
-      });
-
-      it('should return empty array when no roles', () => {
-        const nodeWithoutRoles = { ...mockActorNode };
-        delete nodeWithoutRoles[`${NS}hasRole`];
-        component.node = nodeWithoutRoles;
-        component.ngOnChanges({
-          node: new SimpleChange(null, nodeWithoutRoles, false)
-        });
-
-        expect(component.roles).toEqual([]);
+    describe('representative mandates', () => {
+      it('should resolve an authorised representative mandate for the manufacturer', () => {
+        expect(component.representativeMandates).toEqual([{
+          representative: 'EU Representative GmbH',
+          validFrom: '2026-01-01T00:00:00Z',
+          validTo: '2027-01-01T00:00:00Z',
+        }]);
       });
     });
 
     describe('facilities', () => {
       it('should resolve facility references from graph with proper data', () => {
         const facilities = component.facilities;
-        expect(facilities.length).toBe(1);
+        expect(facilities).toHaveSize(1);
         expect(facilities[0]).toBe(mockFacilityNode);
         expect(facilities[0]['@type']).toEqual([`${NS}Facility`]);
       });
@@ -463,7 +484,7 @@ describe('ActorRendererComponent', () => {
         });
 
         const facilities = component.facilities;
-        expect(facilities.length).toBe(2);
+        expect(facilities).toHaveSize(2);
         expect(facilities[0]).toBe(mockFacilityNode);
         expect(facilities[1]).toBe(mockSecondaryFacilityNode);
       });
@@ -496,7 +517,7 @@ describe('ActorRendererComponent', () => {
         });
 
         const facilities = component.facilities;
-        expect(facilities.length).toBe(2);
+        expect(facilities).toHaveSize(2);
         expect(facilities[0]).toBe(mockFacilityNode);
         expect(facilities[1]).toEqual({ '@id': 'https://unknown.com/facility/missing' });
       });
@@ -585,12 +606,12 @@ describe('ActorRendererComponent', () => {
   describe('roleLabelFor method', () => {
     it('should return correct labels for known roles', () => {
       const testCases = [
-        [`${NS}ManufacturerRole`, 'Manufacturer'],
-        [`${NS}ImporterRole`, 'Importer'],
-        [`${NS}DistributorRole`, 'Distributor'],
-        [`${NS}AuthorisedRepresentativeRole`, 'Auth. Representative'],
-        [`${NS}ConsumerRole`, 'Consumer'],
-        [`${NS}NotifiedBodyRole`, 'Notified Body']
+        [`${NS}manufacturer`, 'Manufacturer'],
+        [`${NS}importer`, 'Importer'],
+        [`${NS}distributor`, 'Distributor'],
+        [`${NS}authorisedRepresentative`, 'Authorised Representative'],
+        [`${NS}consumer`, 'Consumer'],
+        [`${NS}notifiedBody`, 'Notified Body']
       ];
 
       testCases.forEach(([uri, expectedLabel]) => {

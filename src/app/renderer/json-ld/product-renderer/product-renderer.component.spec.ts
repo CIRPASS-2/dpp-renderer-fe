@@ -25,17 +25,19 @@ describe('ProductRendererComponent', () => {
   let component: ProductRendererComponent;
   let fixture: ComponentFixture<ProductRendererComponent>;
 
+  const productIdentifierId = 'https://example.com/identifiers/product-123';
+
   const mockProductNode: JsonLdNode = {
     '@id': 'https://example.com/products/smartphone-123',
     '@type': [`${NS}Product`],
     [`${NS}productName`]: [{ '@value': 'EcoSmart Pro X1 Smartphone' }],
-    [`${NS}uniqueProductID`]: [{ '@value': 'PROD-ECO-X1-2024-001' }],
+    [`${NS}hasUniqueProductIdentifier`]: [{ '@id': productIdentifierId }],
     [`${NS}GTIN`]: [{ '@value': '1234567890123' }],
     [`${NS}productImage`]: [{ '@value': 'https://example.com/images/ecosmart-x1.jpg' }],
     [`${NS}description`]: [{ '@value': 'Advanced sustainable smartphone with recycled materials and energy-efficient design.' }],
     [`${NS}commodityCode`]: [{ '@value': '8517120000' }],
     [`${NS}isEnergyRelated`]: [{ '@value': 'true' }],
-    [`${NS}granularity`]: [{ '@value': 'item' }],
+    [`${NS}manufacturingDate`]: [{ '@value': '2026-03-01' }],
     // Additional properties that should appear in extraUris
     [`${NS}productionDate`]: [{ '@value': '2024-03-15' }],
     [`${NS}weight`]: [{ '@value': '185' }],
@@ -51,11 +53,25 @@ describe('ProductRendererComponent', () => {
     '@id': 'https://example.com/products/simple-product',
     '@type': [`${NS}Product`],
     [`${NS}productName`]: [{ '@value': 'Basic Widget' }],
-    [`${NS}uniqueProductID`]: [{ '@value': 'WIDGET-001' }],
+    [`${NS}hasUniqueProductIdentifier`]: [{ '@id': productIdentifierId }],
     [`${NS}commodityCode`]: [{ '@value': '9999999999' }]
   };
 
   const mockGraph = new Map<string, JsonLdNode>([
+    [productIdentifierId, {
+      '@id': productIdentifierId,
+      '@type': [`${NS}ProductIdentifier`],
+      [`${NS}identifierValue`]: [{ '@value': 'PROD-ECO-X1-2024-001' }],
+      [`${NS}hasGranularity`]: [{ '@id': `${NS}item` }],
+      [`${NS}hasScheme`]: [{ '@id': 'https://example.com/schemes/gtin' }],
+      [`${NS}identifierIssuedOn`]: [{ '@value': '2026-03-01' }],
+      [`${NS}identifierExpiresOn`]: [{ '@value': '2031-03-01' }]
+    }],
+    ['https://example.com/schemes/gtin', {
+      '@id': 'https://example.com/schemes/gtin',
+      '@type': [`${NS}ProductIdentifierScheme`],
+      'http://www.w3.org/2000/01/rdf-schema#label': [{ '@value': 'GTIN' }]
+    }],
     ['https://example.com/classifications/electronics', {
       '@id': 'https://example.com/classifications/electronics',
       '@type': [`${NS}ClassificationCode`],
@@ -93,6 +109,10 @@ describe('ProductRendererComponent', () => {
         expect(component.productId).toBe('PROD-ECO-X1-2024-001');
       });
 
+      it('should extract identifier granularity correctly', () => {
+        expect(component.productGranularity).toBe(`${NS}item`);
+      });
+
       it('should extract GTIN correctly', () => {
         expect(component.gtin).toBe('1234567890123');
       });
@@ -110,7 +130,7 @@ describe('ProductRendererComponent', () => {
       it('should return scalar fields excluding primary display fields', () => {
         const scalarFields = component.scalarFields;
 
-        expect(scalarFields.length).toBe(3);
+        expect(scalarFields).toHaveSize(3);
 
         const fieldByUri = scalarFields.reduce((acc, field) => {
           acc[field.uri] = field.value;
@@ -119,7 +139,7 @@ describe('ProductRendererComponent', () => {
 
         expect(fieldByUri[`${NS}commodityCode`]).toBe('8517120000');
         expect(fieldByUri[`${NS}isEnergyRelated`]).toBe('true');
-        expect(fieldByUri[`${NS}granularity`]).toBe('item');
+        expect(fieldByUri[`${NS}manufacturingDate`]).toBe('2026-03-01');
 
         // Should not include primary fields like productName, GTIN, etc.
         expect(scalarFields.find(f => f.uri === `${NS}productName`)).toBeUndefined();
@@ -140,11 +160,21 @@ describe('ProductRendererComponent', () => {
       });
     });
 
+    describe('identifier metadata delegation', () => {
+      it('should retain scheme and validity metadata from the referenced identifier', () => {
+        expect(component.identifierExtraUris).toEqual([
+          `${NS}hasScheme`,
+          `${NS}identifierIssuedOn`,
+          `${NS}identifierExpiresOn`,
+        ]);
+      });
+    });
+
     describe('extra properties delegation', () => {
       it('should identify properties not in knownUris as extra', () => {
         const extraUris = component.extraUris;
 
-        expect(extraUris.length).toBe(3);
+        expect(extraUris).toHaveSize(3);
         expect(extraUris).toContain(`${NS}productionDate`);
         expect(extraUris).toContain(`${NS}weight`);
         expect(extraUris).toContain(`${NS}hasClassification`);
@@ -158,7 +188,7 @@ describe('ProductRendererComponent', () => {
         component.node = mockProductWithLimitedData;
 
         const extraUris = component.extraUris;
-        expect(extraUris.length).toBe(0);
+        expect(extraUris).toHaveSize(0);
       });
     });
   });
@@ -186,7 +216,7 @@ describe('ProductRendererComponent', () => {
 
     it('should return empty scalar fields when no data available', () => {
       const scalarFields = component.scalarFields;
-      expect(scalarFields.length).toBe(0);
+      expect(scalarFields).toHaveSize(0);
     });
 
     it('should return empty extra URIs when only basic structure exists', () => {
@@ -203,7 +233,7 @@ describe('ProductRendererComponent', () => {
       const scalarCount = component.scalarFields.length;
       const extraCount = component.extraUris.length;
 
-      expect(knownCount).toBe(8); // Updated to reflect current knownUris array
+      expect(knownCount).toBe(8);
       expect(scalarCount).toBeLessThanOrEqual(knownCount); // Scalar excludes some known ones
       expect(extraCount).toBeGreaterThan(0); // Extra properties exist
     });
@@ -226,7 +256,7 @@ describe('ProductRendererComponent', () => {
       const intersection = classifiedAsKnown.filter(prop =>
         classifiedAsExtra.includes(prop)
       );
-      expect(intersection.length).toBe(0);
+      expect(intersection).toHaveSize(0);
     });
   });
 
@@ -262,6 +292,7 @@ describe('ProductRendererComponent', () => {
 
       // Component should still function without graph data
       expect(component.name).toBeTruthy();
+      expect(component.productId).toBeUndefined();
       expect(component.extraUris).toBeDefined();
     });
   });

@@ -20,7 +20,7 @@ import { DividerModule } from 'primeng/divider';
 import { FieldsetModule } from 'primeng/fieldset';
 import { EUDPP_NS } from '../../../common/cirpass-dpp-ontology';
 import { LabelPipe } from '../../../common/label-pipe';
-import { extractPropertyUris, extractString, JsonLdNode } from '../../rendering-models';
+import { extractNodes, extractPropertyUris, extractString, JsonLdNode } from '../../rendering-models';
 import { AbstractRendererComponent } from '../abstract-renderer/abstract-renderer.component';
 
 const NS = EUDPP_NS;
@@ -41,8 +41,12 @@ export class ProductRendererComponent {
 
   readonly knownUris = [
     `${NS}productName`, `${NS}productImage`, `${NS}description`,
-    `${NS}uniqueProductID`, `${NS}GTIN`, `${NS}commodityCode`,
-    `${NS}isEnergyRelated`, `${NS}granularity`,
+    `${NS}hasUniqueProductIdentifier`, `${NS}GTIN`, `${NS}commodityCode`,
+    `${NS}isEnergyRelated`, `${NS}manufacturingDate`,
+  ];
+
+  readonly identifierSkipUris = [
+    `${NS}identifierValue`, `${NS}hasGranularity`,
   ];
 
   /** Gets the product name */
@@ -51,10 +55,29 @@ export class ProductRendererComponent {
   get imageUrl() { return extractString(this.node, `${NS}productImage`); }
   /** Gets the product description */
   get description() { return extractString(this.node, `${NS}description`); }
+  /** Gets the product identifier node resolved from the document graph. */
+  get productIdentifier(): JsonLdNode | undefined {
+    return this.resolveNode(extractNodes(this.node, `${NS}hasUniqueProductIdentifier`)[0]);
+  }
   /** Gets the unique product identifier */
-  get productId() { return extractString(this.node, `${NS}uniqueProductID`); }
+  get productId() {
+    return this.productIdentifier
+      ? extractString(this.productIdentifier, `${NS}identifierValue`)
+      : undefined;
+  }
+  /** Gets the granularity of the product identifier. */
+  get productGranularity() {
+    const granularity = this.productIdentifier
+      ? this.resolveNode(extractNodes(this.productIdentifier, `${NS}hasGranularity`)[0])
+      : undefined;
+    return granularity?.['@id'] as string | undefined;
+  }
   /** Gets the Global Trade Item Number */
   get gtin() { return extractString(this.node, `${NS}GTIN`); }
+
+  private resolveNode(node: JsonLdNode | undefined): JsonLdNode | undefined {
+    return node?.['@id'] ? this.graph.get(node['@id']) ?? node : node;
+  }
 
   /**
    * Gets scalar fields for display excluding the main product identifiers.
@@ -62,12 +85,19 @@ export class ProductRendererComponent {
    */
   get scalarFields(): { uri: string; value: string }[] {
     const skip = new Set([
-      `${NS}productName`, `${NS}productImage`, `${NS}description`, `${NS}uniqueProductID`, `${NS}GTIN`,
+      `${NS}productName`, `${NS}productImage`, `${NS}description`, `${NS}hasUniqueProductIdentifier`, `${NS}GTIN`,
     ]);
     return this.knownUris
       .filter(uri => !skip.has(uri))
       .map(uri => ({ uri, value: extractString(this.node, uri) ?? '' }))
       .filter(f => f.value);
+  }
+
+  /** Gets identifier properties not already displayed in the product header. */
+  get identifierExtraUris(): string[] {
+    return this.productIdentifier
+      ? extractPropertyUris(this.productIdentifier).filter(uri => !this.identifierSkipUris.includes(uri))
+      : [];
   }
 
   /**

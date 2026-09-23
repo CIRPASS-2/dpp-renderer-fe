@@ -20,9 +20,11 @@ import { DividerModule } from 'primeng/divider';
 import { TagModule } from 'primeng/tag';
 import { EUDPP_NS } from '../../../common/cirpass-dpp-ontology';
 import { extractNodes, extractString, extractStrings, isIriOnlyRef, JsonLdNode } from '../../rendering-models';
+import { OntologyRegistryService } from '../ontology-registry.service';
 import { QuantitativePropertyRendererComponent } from '../quantitative-property-renderer/quantitative-property-renderer.component';
 
 const NS = EUDPP_NS;
+const DCTERMS = 'http://purl.org/dc/terms/';
 
 /**
  * Component for rendering substance information including chemicals and substances of concern.
@@ -39,6 +41,8 @@ export class SubstanceRendererComponent implements OnChanges {
   @Input() graph: Map<string, JsonLdNode> = new Map();
 
   private resolvedNode!: JsonLdNode;
+
+  constructor(private readonly registry: OntologyRegistryService) { }
 
   ngOnChanges(): void {
     if (isIriOnlyRef(this.node) && this.node['@id']) {
@@ -120,10 +124,24 @@ export class SubstanceRendererComponent implements OnChanges {
    */
   get lifeCycleStages(): string[] {
     const stageNodes = extractNodes(this.resolvedNode, `${NS}hasLifeCycleStage`);
-    return stageNodes.map(n =>
-      extractString(n, `${NS}value`) ??
-      (n['@id'] as string | undefined)?.split('#').pop() ??
-      'unknown stage'
-    );
+    return stageNodes.map(node => {
+      const stage = this.resolve(node);
+      const id = stage['@id'] as string | undefined;
+      const types = (stage['@type'] as string[]) ?? [];
+      const eventType = types.find(type => this.registry.resolveCategory([type]) === 'event');
+      return extractString(stage, `${DCTERMS}title`) ??
+        extractString(stage, `${NS}value`) ??
+        (eventType ? this.registry.getLabel(eventType) : undefined) ??
+        (id?.startsWith(NS) ? this.registry.getLabel(id) : undefined) ??
+        id?.split(/[#/]/).at(-1) ??
+        'unknown stage';
+    });
+  }
+
+  private resolve(node: JsonLdNode): JsonLdNode {
+    if (node['@id']) {
+      return this.graph.get(node['@id'] as string) ?? node;
+    }
+    return node;
   }
 }

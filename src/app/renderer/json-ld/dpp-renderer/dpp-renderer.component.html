@@ -31,7 +31,7 @@
   <app-dpp-info-renderer [node]="rn.node" [graph]="graph" />
   }
   @case ('quantitative-property') {
-  <app-quantitative-property-renderer [node]="rn.node" />
+  <app-quantitative-property-renderer [node]="rn.node" [graph]="graph" />
   }
   @case ('classification-code') {
   <app-classification-code-renderer [node]="rn.node" />
@@ -47,6 +47,9 @@
   }
   @case ('document') {
   <app-document-renderer [node]="rn.node" />
+  }
+  @case ('event') {
+  <app-event-renderer [node]="rn.node" [graph]="graph" />
   }
   @case ('lca') {
   <app-lca-renderer [node]="rn.node" [graph]="graph" />

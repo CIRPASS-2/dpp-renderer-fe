@@ -18,12 +18,15 @@
     <ng-template pTemplate="header">
         <div class="product-header">
             @if (imageUrl) {
-            <img [src]="imageUrl" [alt]="name ?? 'Product image'" class="product-image" />
+            <img [src]="imageUrl" [alt]="name ?? 'Product'" class="product-image" />
             }
             <div class="product-title-block">
                 <h2 class="product-name">{{ name ?? 'Product' }}</h2>
                 @if (productId) {
                 <span class="product-id">ID: {{ productId }}</span>
+                }
+                @if (productGranularity) {
+                <span class="product-id">Granularity: {{ productGranularity | label }}</span>
                 }
                 @if (gtin) {
                 <span class="product-id">GTIN: {{ gtin }}</span>
@@ -45,6 +48,11 @@
         </div>
         }
     </div>
+
+    @if (productIdentifier && identifierExtraUris.length > 0) {
+    <p-divider />
+    <app-abstract-renderer [node]="productIdentifier" [graph]="graph" [skipUris]="identifierSkipUris" />
+    }
 
     <!-- Unknown / extra properties use abstract renderer -->
     @if (extraUris.length > 0) {

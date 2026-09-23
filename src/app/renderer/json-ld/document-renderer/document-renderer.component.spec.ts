@@ -24,7 +24,7 @@ describe('DocumentRendererComponent', () => {
 
   const mockDocumentNode: JsonLdNode = {
     '@id': 'https://example.com/document/123',
-    '@type': ['https://w3id.org/eudpp#Document'],
+    '@type': ['https://w3id.org/eudpp#DocumentFormattedProperty'],
     'https://w3id.org/eudpp#description': [{ '@value': 'User manual for EcoSmart device' }],
     'https://w3id.org/eudpp#webLink': [{ '@value': 'https://example.com/manual.pdf' }],
     'https://w3id.org/eudpp#contentType': [{ '@value': 'application/pdf' }],

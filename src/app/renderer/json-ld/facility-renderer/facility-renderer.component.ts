@@ -16,10 +16,18 @@
 
 import { Component, Input, OnChanges } from '@angular/core';
 import { CardModule } from 'primeng/card';
-import { EUDPP_NS } from '../../../common/cirpass-dpp-ontology';
-import { JsonLdNode, extractString, extractStrings, isIriOnlyRef } from '../../rendering-models';
+import { DividerModule } from 'primeng/divider';
+import { EUDPP_NS, SCHEMA_NS } from '../../../common/cirpass-dpp-ontology';
+import { JsonLdNode, extractNodes, extractPropertyUris, extractString, isIriOnlyRef } from '../../rendering-models';
+import { AbstractRendererComponent } from '../abstract-renderer/abstract-renderer.component';
 
 const NS = EUDPP_NS;
+const SCHEMA = SCHEMA_NS;
+
+interface Coordinates {
+  latitude?: string;
+  longitude?: string;
+}
 
 /**
  * Component for rendering facility information including IDs and associated actors.
@@ -27,13 +35,15 @@ const NS = EUDPP_NS;
  */
 @Component({
   selector: 'app-facility-renderer',
-  imports: [CardModule],
+  imports: [CardModule, DividerModule, AbstractRendererComponent],
   templateUrl: './facility-renderer.component.html',
   styleUrl: './facility-renderer.component.css'
 })
 export class FacilityRendererComponent implements OnChanges {
   @Input({ required: true }) node!: JsonLdNode;
   @Input() graph: Map<string, JsonLdNode> = new Map();
+
+  readonly identifierSkipUris = [`${NS}identifierValue`];
 
   private resolvedNode!: JsonLdNode;
 
@@ -57,21 +67,86 @@ export class FacilityRendererComponent implements OnChanges {
     return id.length > 50 ? '…' + id.slice(-40) : id;
   }
 
+  get facilityIdentifier(): JsonLdNode | undefined {
+    return this.resolve(extractNodes(this.resolvedNode, `${NS}hasUniqueFacilityIdentifier`)[0]);
+  }
+
   /**
    * Gets the display identifier for the facility.
-   * @returns Unique facility ID or facility ID, undefined if neither exists
+   * @returns Unique facility identifier value, undefined when unavailable
    */
   get displayId(): string | undefined {
-    return extractString(this.resolvedNode, `${NS}uniqueFacilityID`) ??
-      extractString(this.resolvedNode, `${NS}facilityID`);
+    return this.facilityIdentifier
+      ? extractString(this.facilityIdentifier, `${NS}identifierValue`)
+      : undefined;
+  }
+
+  get identifierExtraUris(): string[] {
+    return this.facilityIdentifier
+      ? extractPropertyUris(this.facilityIdentifier).filter(uri => !this.identifierSkipUris.includes(uri))
+      : [];
   }
 
   /**
    * Gets the list of actors that use this facility.
-   * @returns Array of actor identifiers
+   * Includes explicit isUsedByActor links and reverse usesFacility links in the graph.
    */
-  get actors(): string[] {
-    return extractStrings(this.resolvedNode, `${NS}isUsedByActor`);
+  get actors(): JsonLdNode[] {
+    const directActors = extractNodes(this.resolvedNode, `${NS}isUsedByActor`);
+    const facilityId = this.resolvedNode['@id'] as string | undefined;
+    const reverseActors = facilityId
+      ? Array.from(this.graph.values()).filter(actor =>
+        extractNodes(actor, `${NS}usesFacility`).some(facility => facility['@id'] === facilityId)
+      )
+      : [];
+    const actors = [...directActors, ...reverseActors]
+      .map(actor => this.resolve(actor) ?? actor);
+
+    return actors.filter((actor, index) => {
+      const actorId = actor['@id'];
+      return !actorId || actors.findIndex(candidate => candidate['@id'] === actorId) === index;
+    });
+  }
+
+  /** Gets the facility address formatted from a schema:PostalAddress node. */
+  get postalAddress(): string | undefined {
+    const address = this.resolve(extractNodes(this.resolvedNode, `${SCHEMA}address`)[0]);
+    if (!address) return undefined;
+
+    const locality = [
+      extractString(address, `${SCHEMA}postalCode`),
+      extractString(address, `${SCHEMA}addressLocality`),
+    ].filter(Boolean).join(' ');
+    const formatted = [
+      extractString(address, `${SCHEMA}streetAddress`),
+      locality,
+      extractString(address, `${SCHEMA}addressCountry`),
+    ].filter(Boolean).join(', ');
+    return formatted || undefined;
+  }
+
+  get coordinates(): Coordinates | undefined {
+    const geo = this.resolve(extractNodes(this.resolvedNode, `${SCHEMA}geo`)[0]);
+    if (!geo) return undefined;
+
+    const latitude = extractString(geo, `${SCHEMA}latitude`);
+    const longitude = extractString(geo, `${SCHEMA}longitude`);
+    return latitude || longitude ? { latitude, longitude } : undefined;
+  }
+
+  /** Gets a concise display name for a linked actor. */
+  actorLabel(actor: JsonLdNode): string {
+    return extractString(actor, `${NS}actorName`) ??
+      extractString(actor, `${NS}registeredTradeName`) ??
+      (actor['@id'] as string | undefined) ??
+      'Actor';
+  }
+
+  private resolve(node: JsonLdNode | undefined): JsonLdNode | undefined {
+    if (node && isIriOnlyRef(node) && node['@id']) {
+      return this.graph.get(node['@id']) ?? node;
+    }
+    return node;
   }
 }
 

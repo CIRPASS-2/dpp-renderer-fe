@@ -21,6 +21,7 @@ import { JsonLdNode } from '../../rendering-models';
 import { SubstanceRendererComponent } from './substance-renderer.component';
 
 const NS = EUDPP_NS;
+const DCTERMS = 'http://purl.org/dc/terms/';
 
 // Mock child component
 @Component({
@@ -51,7 +52,7 @@ describe('SubstanceRendererComponent', () => {
     [`${NS}hasConcentration`]: [{ '@id': 'https://example.com/concentration/1' }],
     [`${NS}hasThreshold`]: [{ '@id': 'https://example.com/threshold/1' }],
     [`${NS}hasLifeCycleStage`]: [
-      { [`${NS}value`]: [{ '@value': 'Manufacturing' }] },
+      { '@id': 'https://example.com/stage/manufacturing' },
       { '@id': 'https://example.com/stage#Usage' }
     ]
   };
@@ -64,19 +65,25 @@ describe('SubstanceRendererComponent', () => {
 
   const mockConcentrationNode: JsonLdNode = {
     '@id': 'https://example.com/concentration/1',
+    '@type': [`${NS}Concentration`],
     [`${NS}value`]: [{ '@value': '10.5' }],
     [`${NS}unit`]: [{ '@value': 'mg/kg' }]
   };
 
   const mockThresholdNode: JsonLdNode = {
     '@id': 'https://example.com/threshold/1',
+    '@type': [`${NS}Threshold`],
     [`${NS}value`]: [{ '@value': '5.0' }],
     [`${NS}unit`]: [{ '@value': 'ppm' }]
   };
 
   const mockGraph = new Map<string, JsonLdNode>([
     ['https://example.com/concentration/1', mockConcentrationNode],
-    ['https://example.com/threshold/1', mockThresholdNode]
+    ['https://example.com/threshold/1', mockThresholdNode],
+    ['https://example.com/stage/manufacturing', {
+      '@id': 'https://example.com/stage/manufacturing',
+      [`${DCTERMS}title`]: [{ '@value': 'Manufacturing' }]
+    }]
   ]);
 
   beforeEach(async () => {
@@ -221,7 +228,7 @@ describe('SubstanceRendererComponent', () => {
 
     it('should resolve concentration nodes from graph', () => {
       const nodes = component.concentrationNodes;
-      expect(nodes.length).toBe(1);
+      expect(nodes).toHaveSize(1);
       expect(nodes[0]).toBe(mockConcentrationNode);
     });
 
@@ -245,7 +252,7 @@ describe('SubstanceRendererComponent', () => {
 
     it('should resolve threshold nodes from graph', () => {
       const nodes = component.thresholdNodes;
-      expect(nodes.length).toBe(1);
+      expect(nodes).toHaveSize(1);
       expect(nodes[0]).toBe(mockThresholdNode);
     });
   });
@@ -258,6 +265,21 @@ describe('SubstanceRendererComponent', () => {
     it('should extract lifecycle stages', () => {
       const stages = component.lifeCycleStages;
       expect(stages).toEqual(['Manufacturing', 'Usage']);
+    });
+
+    it('should use the ontology label for an EVENT lifecycle stage', () => {
+      const eventStageId = 'https://example.com/stage/maintenance';
+      component.graph.set(eventStageId, {
+        '@id': eventStageId,
+        '@type': [`${NS}MaintenanceEvent`]
+      });
+      component.node = {
+        '@id': 'test',
+        [`${NS}hasLifeCycleStage`]: [{ '@id': eventStageId }]
+      };
+      component.ngOnChanges();
+
+      expect(component.lifeCycleStages).toEqual(['Maintenance']);
     });
 
     it('should return empty array when no stages', () => {
@@ -276,7 +298,7 @@ describe('SubstanceRendererComponent', () => {
       component.ngOnChanges();
 
       const stages = component.lifeCycleStages;
-      expect(stages).toEqual(['unknown://stage']); // Actual behavior: split('#').pop() returns full string when no '#'
+      expect(stages).toEqual(['stage']);
     });
   });
 
